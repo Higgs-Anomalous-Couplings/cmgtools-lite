@@ -1,0 +1,33 @@
+dipho_mass: dipho_mass: 100,30,230; XTitle="M_{#gamma#gamma} (GeV)", Legend='TC', IncludeOverflows=True
+
+dipho_mass_narrow: dipho_mass: 40,100,180; XTitle="M_{#gamma#gamma} (GeV)", Legend='TC', IncludeOverflows=True
+
+dipho_mass_higgs: dipho_mass: 30,110,140; XTitle="M_{#gamma#gamma} (GeV)", Legend='TC', IncludeOverflows=True
+
+dipho_leadEta: dipho_leadEta: 50,-2.5,2.5; XTitle="Leading photon #eta", Legend='TC', IncludeOverflows=True
+
+dipho_subleadEta: dipho_subleadEta: 50,-2.5,2.5; XTitle="Subleading photon #eta", Legend='TC', IncludeOverflows=True
+
+dipho_leadPt: dipho_leadPt: 100,0,500; XTitle="Leading photon p_{T} (GeV)", Legend='TC', IncludeOverflows=True, Logy=True
+
+dipho_subleadPt: dipho_subleadPt: 100,0,500; XTitle="Subleading photon p_{T} (GeV)", Legend='TC', IncludeOverflows=True, Logy=True
+
+dipho_PToM: dipho_PToM: 100,0,10; XTitle="p_{T}^{#gamma#gamma}/M_{#gamma#gamma}", Legend='TC', IncludeOverflows=True, Logy=True
+
+dijet_abs_dEta: dijet_abs_dEta: 75,0,15; XTitle="Dijet |#Delta#eta|", Legend='TC', IncludeOverflows=True
+
+dijet_Mjj: dijet_Mjj: 50,0,5000; XTitle="M_{jj} (GeV)", Legend='TC', IncludeOverflows=True, Logy=True
+
+dijet_nj: dijet_nj  : 6,-0.5,5.5; XTitle="Number of jets", Legend='TC', IncludeOverflows=True
+
+dipho_leadIDMVA: dipho_leadIDMVA  : 50,-1,1; XTitle="Leading photon MVA ID", Legend='TC', IncludeOverflows=True, Logy=True
+
+dipho_subleadIDMVA: dipho_subleadIDMVA  : 50,-1,1; XTitle="Subleading photon MVA ID", Legend='TC', IncludeOverflows=True, Logy=True
+
+result : result  : 50,-1,1; XTitle="Diphoton MVA result", Legend='TC', IncludeOverflows=True, Logy=True
+
+dijet_mva : dijet_mva  : 50,-1,1; XTitle="VBF MVA value", Legend='TC', IncludeOverflows=True, Logy=True
+
+dipho_dijet_MVA : dipho_dijet_MVA  : 50,-1,1; XTitle="VBF #gamma#gamma jj MVA value", Legend='TC', IncludeOverflows=True, Logy=True
+
+dipho_mva : dipho_mva  : 50,-1,1; XTitle="#gamma#gamma MVA value", Legend='TC', IncludeOverflows=True, Logy=True

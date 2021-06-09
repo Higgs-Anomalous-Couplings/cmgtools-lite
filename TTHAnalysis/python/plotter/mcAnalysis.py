@@ -4,10 +4,9 @@ from CMGTools.TTHAnalysis.plotter.tree2yield import *
 from CMGTools.TTHAnalysis.plotter.projections import *
 from CMGTools.TTHAnalysis.plotter.figuresOfMerit import FOM_BY_NAME
 from CMGTools.TTHAnalysis.plotter.histoWithNuisances import *
-import pickle, re, random, time
+import pickle, re, random, time, glob
 from copy import copy, deepcopy
 from collections import defaultdict
-from glob import glob
 
 _T0 = long(ROOT.gSystem.Now())
 
@@ -171,7 +170,13 @@ class MCAnalysis:
                     print 'Added normalization uncertainty %s to %s, %s. Please migrate away from using the deprecated NormSystematic option.'%(extra['NormSystematic'],pname,field[1])
                     options._deprecation_warning_NormSystematic = False
 
-            cnames = [ x.strip() for x in field[1].split("+") ]
+            match=re.match("(\S+)\*",field[1]) 
+            if match:
+                cnamesWithPath = []
+                for treepath in options.path:
+                    cnamesWithPath += (list(glob.iglob("%s/%s*" % (treepath,match.group(0)))))
+                cnames = [os.path.basename(cname).rsplit(".",1)[0] for cname in cnamesWithPath]
+            else: cnames = [ x.strip() for x in field[1].split("+") ]
             total_w = 0.; to_norm = False; ttys = [];
             genWeightName = extra["genWeightName"] if "genWeightName" in extra else "genWeight"
             genSumWeightName = extra["genSumWeightName"] if "genSumWeightName" in extra else "genEventSumw"
@@ -191,7 +196,7 @@ class MCAnalysis:
 
                 basepath = None
                 for treepath in options.path:
-                    if os.path.exists(treepath+"/"+cname) or (treename == "NanoAOD" and os.path.isfile(treepath+"/"+cname+".root")):
+                    if os.path.exists(treepath+"/"+cname) or ((treename == "NanoAOD" or 'trees' in treename) and os.path.isfile(treepath+"/"+cname+".root")):
                         basepath = treepath
                         break
                 if not basepath:
@@ -210,12 +215,12 @@ class MCAnalysis:
                     rootfile = "%s/%s/%s/tree.root" % (basepath, cname, treename)
                     rootfile = open(rootfile+".url","r").readline().strip()
                 pckfile = basepath+"/%s/skimAnalyzerCount/SkimReport.pck" % cname
-                if treename == "NanoAOD":
-                    objname = "Events"
+                if treename == "NanoAOD" or 'trees' in treename:
+                    objname = "Events" if treename == "NanoAOD" else treename
                     pckfile = None
                     rootfile = "%s/%s" % (basepath, cname)
                     if os.path.isdir(rootfile):
-                        rootfiles = glob("%s/%s/*.root" % (basepath, cname))
+                        rootfiles = glob.glob("%s/%s/*.root" % (basepath, cname))
                     elif os.path.isfile(rootfile):
                         rootfiles = [ rootfile ]
                     elif os.path.isfile(rootfile+".root"):
@@ -243,22 +248,33 @@ class MCAnalysis:
                 if pname in self._allData: self._allData[pname].append(tty)
                 else                     : self._allData[pname] =     [tty]
                 if "data" not in pname:
-                    if treename != "NanoAOD":
-                        pckobj  = pickle.load(open(tty.pckfile,'r'))
-                        counters = dict(pckobj)
+                    total_w = 1.0
+                    if options.noHeppyTree:
+                        if options.weight:
+                            if (is_w==0): raise RuntimeError("Can't put together a weighted and an unweighted component (%s)" % cnames)
+                            is_w = 1
+                            scale = "(%s)" % field[2]
+                        else:
+                            scale = "1"
+                            if (is_w==1): raise RuntimeError("Can't put together a weighted and an unweighted component (%s)" % cnames)
+                            is_w = 0
                     else:
-                        counters = { 'Sum Weights':0.0, 'All Events':0 }  # fake
-                    if ('Sum Weights' in counters) and options.weight:
-                        if (is_w==0): raise RuntimeError, "Can't put together a weighted and an unweighted component (%s)" % cnames
-                        is_w = 1; 
-                        total_w += counters['Sum Weights']
-                        scale = "(%s)*(%s)" % (genWeightName, field[2])
-                    else:
-                        if (is_w==1): raise RuntimeError, "Can't put together a weighted and an unweighted component (%s)" % cnames
-                        is_w = 0;
-                        total_w += counters['All Events']
-                        scale = "(%s)" % field[2]
-                    if len(field) == 4: scale += "*("+field[3]+")"
+                        if treename != "NanoAOD":
+                            pckobj  = pickle.load(open(tty.pckfile,'r'))
+                            counters = dict(pckobj)
+                        else:
+                            counters = { 'Sum Weights':0.0, 'All Events':0 }  # fake
+                        if ('Sum Weights' in counters) and options.weight:
+                            if (is_w==0): raise RuntimeError, "Can't put together a weighted and an unweighted component (%s)" % cnames
+                            is_w = 1; 
+                            total_w += counters['Sum Weights']
+                            scale = "(%s)*(%s)" % (genWeightName, field[2])
+                        else:
+                            if (is_w==1): raise RuntimeError, "Can't put together a weighted and an unweighted component (%s)" % cnames
+                            is_w = 0;
+                            total_w += counters['All Events']
+                            scale = "(%s)" % field[2]
+                        if len(field) == 4: scale += "*("+field[3]+")"
                     for p0,s in options.processesToScale:
                         for p in p0.split(","):
                             if re.match(p+"$", pname): scale += "*("+s+")"
@@ -846,7 +862,7 @@ def addMCAnalysisOptions(parser,addTreeToYieldOnesToo=True):
     parser.add_option("--project", dest="project", type="string", help="Project to a scenario (e.g 14TeV_300fb_scenario2)")
     parser.add_option("--plotgroup", dest="plotmergemap", type="string", default=[], action="append", help="Group plots into one. Syntax is '<newname> := (comma-separated list of regexp)', can specify multiple times. Note it is applied after plotting.")
     parser.add_option("--scaleplot", dest="plotscalemap", type="string", default=[], action="append", help="Scale plots by this factor (before grouping). Syntax is '<newname> := (comma-separated list of regexp)', can specify multiple times.")
-    parser.add_option("-t", "--tree",          dest="tree", default='ttHLepTreeProducerTTH', help="Pattern for tree name");
+    parser.add_option("-t", "--tree",          dest="tree", default='vbfTagDumper/trees/vbf_125_13TeV_GeneralDipho', help="Pattern for tree name");
     parser.add_option("--fom", "--figure-of-merit", dest="figureOfMerit", type="string", default=[], action="append", help="Add this figure of merit to the output table (S/B, S/sqrB, S/sqrSB)")
     parser.add_option("--binname", dest="binname", type="string", default='default', help="Bin name for uncertainties matching and datacard preparation [default]")
     parser.add_option("--unc", dest="variationsFile", type="string", default=None, help="Uncertainty file to be loaded")
@@ -855,6 +871,7 @@ def addMCAnalysisOptions(parser,addTreeToYieldOnesToo=True):
     parser.add_option("--efr", "--external-fitResult", dest="externalFitResult", type="string", default=None, nargs=2, help="External fitResult")
     parser.add_option("--aefr", "--alt-external-fitResults", dest="altExternalFitResults", type="string", default=[], nargs=2, action="append", help="External fitResult")
     parser.add_option("--aefrl", "--alt-external-fitResult-labels", dest="altExternalFitResultLabels", type="string", default=[], nargs=1, action="append", help="External fitResult")
+    parser.add_option("--no-heppy-tree", dest="noHeppyTree", action="store_true", default=False, help="Set to true to read root files when they were not made with Heppy (different convention for path names, might need to be adapted)");
 
 if __name__ == "__main__":
     from optparse import OptionParser

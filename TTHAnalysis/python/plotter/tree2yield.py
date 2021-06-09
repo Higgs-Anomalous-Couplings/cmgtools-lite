@@ -14,7 +14,7 @@ ROOT.gROOT.SetBatch(True)
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 ROOT.gSystem.Load("libpng") # otherwise we may end up with a bogus version
 
-import copy
+from copy import copy,deepcopy
 
 from CMGTools.TTHAnalysis.plotter.cutsFile import *
 from CMGTools.TTHAnalysis.plotter.mcCorrections import *
@@ -212,7 +212,7 @@ class TreeToYield:
         ttyVariations = {}
         for var in self.getVariations():
             for direction in ['up','dn']:
-                tty2 = copy.copy(self)
+                tty2 = copy(self)
                 tty2._name = tty2._name + '_%s_%s'%(var.name,direction)
                 tty2._isVariation = (var,direction)
                 tty2._variations = []
@@ -683,7 +683,7 @@ def addTreeToYieldOptions(parser):
     parser.add_option("-N", "--n-minus-one", dest="nMinusOne", action="store_true", help="Compute n-minus-one yields and plots")
     parser.add_option("--select-n-minus-one", dest="nMinusOneSelection", type="string", default=None, help="Select which cuts to do N-1 for (comma separated list of regexps)")
     parser.add_option("--NI", "--inv-n-minus-one", dest="nMinusOneInverted", action="store_true", help="Compute n-minus-one yields and plots")
-    parser.add_option("--obj", "--objname",    dest="obj", default='tree', help="Pattern for the name of the TTree inside the file");
+    parser.add_option("--obj", "--objname",    dest="obj", default='vbfTagDumper/trees/vbf_125_13TeV_GeneralDipho', help="Pattern for the name of the TTree inside the file");
     parser.add_option("-G", "--no-fractions",  dest="fractions",action="store_false", default=True, help="Don't print the fractions");
     parser.add_option("-F", "--add-friend",    dest="friendTrees",  action="append", default=[], nargs=2, help="Add a friend tree (treename, filename). Can use {name}, {cname} patterns in the treename") 
     parser.add_option("--Fs", "--add-friend-simple",    dest="friendTreesSimple",  action="append", default=[], nargs=1, help="Add friends in a directory. The rootfile must be called evVarFriend_{cname}.root and tree must be called 't' in a subdir 'sf' inside the rootfile.") 
@@ -700,7 +700,7 @@ def addTreeToYieldOptions(parser):
 
 
 def mergeReports(reports):
-    one = copy.deepcopy(reports[0])
+    one = deepcopy(reports[0])
     for i,(c,x) in enumerate(one):
         one[i][1][1] = pow(one[i][1][1], 2)
     for two in reports[1:]:
