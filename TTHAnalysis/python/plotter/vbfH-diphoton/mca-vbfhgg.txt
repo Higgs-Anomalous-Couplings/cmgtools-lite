@@ -5,11 +5,15 @@ DiPhoton   : output_DiPhotonJetsBox_MGG-80toInf_13TeV-sherpa : 0.001; FillColor=
 GJets   : output_GJet_Pt-20to40_DoubleEMEnriched_MGG-80toInf* : 0.001; FillColor=ROOT.kAzure+2  , Label="\#gamma + jets", NormSystematic=1.0, TreeName="vbfTagDumper/trees/gjet_anyfake_13TeV_GeneralDipho"
 GJets   : output_GJet_Pt-40toInf_DoubleEMEnriched_MGG-80toInf* : 0.001; FillColor=ROOT.kAzure+2  , Label="\#gamma + jets", NormSystematic=1.0, TreeName="vbfTagDumper/trees/gjet_anyfake_13TeV_GeneralDipho"
 
-ggH+   : output_GluGluHToGG_M-125_TuneCP5_13TeV-powheg-pythia8* : 0.001; FillColor=ROOT.kBlack, Label="gg H\#rightarrow\#gamma\#gamma (powheg)", NormSystematic=0.1, TreeName="vbfTagDumper/trees/ggh_125_13TeV_GeneralDipho"
+ggH+   : output_GluGluHToGG_M-125_TuneCP5_13TeV-powheg-pythia8* : 0.001*10; FillColor=ROOT.kBlack, Label="gg H\#rightarrow\#gamma\#gamma (powheg)", NormSystematic=0.1, TreeName="vbfTagDumper/trees/ggh_125_13TeV_GeneralDipho"
 
 #VBFHiggs_amcatnlo   : output_VBFHToGG_M125_TuneCP5_13TeV-amcatnlo-pythia8* : 0.001; FillColor=ROOT.kGray+2  , FillStyle=3005  , Label="VBF H\#rightarrow\#gamma\#gamma (aMC@NLO)", NormSystematic=0.1, TreeName="vbfTagDumper/trees/vbf_125_13TeV_GeneralDipho"
 
 VBFpow+   : output_VBFHToGG_M-125_TuneCP5_13TeV-powheg-pythia8 : 0.001; FillColor=ROOT.kGray+2  , FillStyle=3004  , Label="VBF H\#rightarrow\#gamma\#gamma (powheg)", NormSystematic=0.1, TreeName="vbfTagDumper/trees/vbf_125_13TeV_GeneralDipho"
+
+ggH10x+   : output_GluGluHToGG_M-125_TuneCP5_13TeV-powheg-pythia8* : 0.01; FillColor=ROOT.kRed, Label="gg H\#rightarrow\#gamma\#gamma x 10", NormSystematic=0.1, TreeName="vbfTagDumper/trees/ggh_125_13TeV_GeneralDipho"
+
+VBFpow10x+   : output_VBFHToGG_M-125_TuneCP5_13TeV-powheg-pythia8 : 0.01; FillColor=ROOT.kRed+2  , FillStyle=3004  , Label="VBF H\#rightarrow\#gamma\#gamma x 10", NormSystematic=0.1, TreeName="vbfTagDumper/trees/vbf_125_13TeV_GeneralDipho"
 
 VBFL1Zgf05   : output_VBFHiggs0L1Zgf05ph0ToGG_M125* : 0.001; FillColor=ROOT.kRed+2  , Label="VBF H\#rightarrow\#gamma\#gamma (f_{\#Lambda1}^{Z\#gamma} = 0.5)", NormSystematic=0.1, TreeName="vbfTagDumper/trees/vbf_125_13TeV_GeneralDipho"
 
