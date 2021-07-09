@@ -8,13 +8,39 @@ dipho_leadEta: dipho_leadEta: 50,-2.5,2.5; XTitle="Leading photon #eta", Legend=
 
 dipho_subleadEta: dipho_subleadEta: 50,-2.5,2.5; XTitle="Subleading photon #eta", Legend='TC', IncludeOverflows=True
 
-dipho_leadPt: dipho_leadPt: 100,0,500; XTitle="Leading photon p_{T} (GeV)", Legend='TC', IncludeOverflows=True, Logy=True
+dipho_leadR9: dipho_leadR9: 60,0.5,1.1; XTitle="Leading photon R_{9}", Legend='TC', IncludeOverflows=True
 
-dipho_subleadPt: dipho_subleadPt: 100,0,500; XTitle="Subleading photon p_{T} (GeV)", Legend='TC', IncludeOverflows=True, Logy=True
+dipho_subleadR9: dipho_subleadR9: 60,0.5,1.1; XTitle="Subleading photon R_{9}", Legend='TC', IncludeOverflows=True
+
+dipho_lead_sieie: dipho_lead_sieie: 50,0,0.05; XTitle="Leading photon #sigma_{i#etai#eta}", Legend='TC', IncludeOverflows=True
+
+dipho_sublead_sieie: dipho_sublead_sieie: 50,0,0.05; XTitle="Subleading photon #sigma_{i#etai#eta}", Legend='TC', IncludeOverflows=True
+
+dipho_lead_hoe: dipho_lead_hoe: 50,0,0.05; XTitle="Leading photon H/E", Legend='TC', IncludeOverflows=True
+
+dipho_sublead_hoe: dipho_sublead_hoe: 50,0,0.05; XTitle="Subleading photon H/E", Legend='TC', IncludeOverflows=True
+
+dipho_lead_ptoM: dipho_lead_ptoM: 100,0,2.5; XTitle="Leading photon p_{T}/M_{#gamma#gamma}", Legend='TC', IncludeOverflows=True, Logy=True
+
+dipho_sublead_ptoM: dipho_sublead_ptoM: 100,0,1.6; XTitle="Subleading photon p_{T}/M_{#gamma#gamma}", Legend='TC', IncludeOverflows=True, Logy=True
 
 dipho_PToM: dipho_PToM: 100,0,10; XTitle="p_{T}^{#gamma#gamma}/M_{#gamma#gamma}", Legend='TC', IncludeOverflows=True, Logy=True
 
-dijet_abs_dEta: dijet_abs_dEta: 75,0,15; XTitle="Dijet |#Delta#eta|", Legend='TC', IncludeOverflows=True
+dipho_pt: dipho_pt: 30,0,300; XTitle="p_{T}^{#gamma#gamma}", Legend='TC', IncludeOverflows=True, Logy=True
+
+dijet_dipho_pt: dijet_dipho_pt: 30,0,300; XTitle="p_{T}^{jj#gamma#gamma}", Legend='TC', IncludeOverflows=True, Logy=True
+
+dijet_LeadJPt: dijet_LeadJPt: 100,0,500; XTitle="Leading jet p_{T} (GeV)", Legend='TC', IncludeOverflows=True, Logy=True
+
+dijet_SubJPt: dijet_SubJPt: 100,0,300; XTitle="Subleading jet p_{T} (GeV)", Legend='TC', IncludeOverflows=True, Logy=True
+
+dijet_pt: dijet_pt: 50,0,500; XTitle="p_{T}^{jj}", Legend='TC', IncludeOverflows=True, Logy=True
+
+dijet_Zep: dijet_Zep: 25,0,5; XTitle="jj Zeppenfeld variable", Legend='TC', IncludeOverflows=True, Logy=True
+
+dijet_abs_dEta: dijet_abs_dEta: 50,0,10; XTitle="Dijet |#Delta#eta|", Legend='TC', IncludeOverflows=True
+
+dijet_dEta: dijet_leadEta-dijet_subleadEta: 50,-10,10; XTitle="#Delta#eta(j\,j)", Legend='TC', IncludeOverflows=True
 
 dijet_Mjj: dijet_Mjj: 50,0,5000; XTitle="M_{jj} (GeV)", Legend='TC', IncludeOverflows=True, Logy=True
 
@@ -31,3 +57,26 @@ dijet_mva : dijet_mva  : 50,-1,1; XTitle="VBF MVA value", Legend='TC', IncludeOv
 dipho_dijet_MVA : dipho_dijet_MVA  : 50,-1,1; XTitle="VBF #gamma#gamma jj MVA value", Legend='TC', IncludeOverflows=True, Logy=True
 
 dipho_mva : dipho_mva  : 50,-1,1; XTitle="#gamma#gamma MVA value", Legend='TC', IncludeOverflows=True, Logy=True
+
+sigmarv : sigmarv: 25,0,0.05; XTitle="per-event mass resolution (right vertex)", Legend='TC', IncludeOverflows=True
+
+sigmawv : sigmawv: 25,0,0.05; XTitle="per-event mass resolution (wrong vertex)", Legend='TC', IncludeOverflows=True
+
+CosPhi : CosPhi: 100,-1.0,1.0; XTitle="cos(#Delta#phi) between photons", Legend='TC', IncludeOverflows=True, Logy=True
+
+dijet_dphi: dijet_dphi: 32,0,3.2; XTitle="#Delta#phi(j\,j)", Legend='TC', IncludeOverflows=True
+
+dijet_dipho_dphi: dijet_dipho_dphi: 32,0,3.2; XTitle="#Delta#phi(jj\,#gamma#gamma)", Legend='TC', IncludeOverflows=True, Logy=True
+
+dijet_dipho_dphi_trunc: dijet_dipho_dphi_trunc: 32,0,3.2; XTitle="#Delta#phi(jj\,#gamma#gamma) truncated", Legend='TC', IncludeOverflows=True, Logy=True
+
+dijet_minDRJetPho: dijet_minDRJetPho: 100,0,5.0; XTitle="#Delta R_{min}(#gamma\,j)", Legend='TC', IncludeOverflows=True
+
+vtxprob : vtxprob: 50,-0,1.0; XTitle="per-event probability to pick correct vertex", Legend='TC', IncludeOverflows=True, Logy=True
+
+dijet_mva_prob_VBF : dijet_mva_prob_VBF: 50,0,1.0; XTitle="VBF probability (VBF MVA)", Legend='TC', IncludeOverflows=True, Logy=True
+
+dijet_mva_prob_ggH : dijet_mva_prob_ggH: 50,0,1.0; XTitle="ggH probability (VBF MVA)", Legend='TC', IncludeOverflows=True, Logy=True
+
+dijet_mva_prob_bkg : dijet_mva_prob_bkg: 50,0,1.0; XTitle="Bkg probability (VBF MVA)", Legend='TC', IncludeOverflows=True, Logy=True
+

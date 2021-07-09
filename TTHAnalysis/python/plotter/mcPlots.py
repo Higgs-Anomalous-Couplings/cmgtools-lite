@@ -1038,19 +1038,19 @@ class PlotMaker:
                     signorms = doStackSignalNorm(pspec,pmap,options.showIndivSigShapes or options.showIndivSigs,extrascale=options.signalPlotScale, norm=not options.showIndivSigs)
                     for signorm in signorms:
                         if outputDir: 
-                            signorm.SetDirectory(outputDir); outputDir.WriteTObject(signorm)
+                            signorm.SetDirectory(outputDir); outputDir.WriteTObject(signorm.raw())
                         reMax(total,signorm,islog,doWide=doWide)
                 if options.showDatShape: 
                     datnorm = doDataNorm(pspec,pmap)
                     if datnorm != None:
                         if outputDir: 
-                            datnorm.SetDirectory(outputDir); outputDir.WriteTObject(datnorm)
+                            datnorm.SetDirectory(outputDir); outputDir.WriteTObject(datnorm.raw())
                         reMax(total,datnorm,islog,doWide=doWide)
                 if options.showSFitShape: 
                     (sfitnorm,sf) = doStackSigScaledNormData(pspec,pmap)
                     if sfitnorm != None:
                         if outputDir: 
-                            sfitnorm.SetDirectory(outputDir); outputDir.WriteTObject(sfitnorm)
+                            sfitnorm.SetDirectory(outputDir); outputDir.WriteTObject(sfitnorm.raw())
                         reMax(total,sfitnorm,islog,doWide=doWide)
                 if options.flagDifferences and len(pmap) == 4:
                     new = pmap['signal']
