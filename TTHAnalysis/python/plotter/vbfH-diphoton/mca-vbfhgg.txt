@@ -1,9 +1,8 @@
 data: output_DoubleEG* ; TreeName="vbfTagDumper/trees/Data_13TeV_GeneralDipho"
 
-DiPhoton   : output_DiPhotonJetsBox_MGG-80toInf_13TeV-sherpa : 0.001; FillColor=ROOT.kGreen+2  , Label="prompt \#gamma\#gamma", NormSystematic=0.1, TreeName="vbfTagDumper/trees/dipho_13TeV_GeneralDipho"
+DiPhoton   : output_DiPhotonJetsBox* : 0.001; FillColor=ROOT.kGreen+2  , Label="prompt \#gamma\#gamma", NormSystematic=0.1, TreeName="vbfTagDumper/trees/dipho_13TeV_GeneralDipho"
 
-GJets   : output_GJet_Pt-20to40_DoubleEMEnriched_MGG-80toInf* : 0.001; FillColor=ROOT.kAzure+2  , Label="\#gamma + jets", NormSystematic=1.0, TreeName="vbfTagDumper/trees/gjet_anyfake_13TeV_GeneralDipho"
-GJets   : output_GJet_Pt-40toInf_DoubleEMEnriched_MGG-80toInf* : 0.001; FillColor=ROOT.kAzure+2  , Label="\#gamma + jets", NormSystematic=1.0, TreeName="vbfTagDumper/trees/gjet_anyfake_13TeV_GeneralDipho"
+GJets   : output_GJet* : 0.001; FillColor=ROOT.kAzure+2  , Label="\#gamma + jets", NormSystematic=1.0, TreeName="vbfTagDumper/trees/gjet_anyfake_13TeV_GeneralDipho"
 
 ggH+   : output_GluGluHToGG_M-125_TuneCP5_13TeV-powheg-pythia8* : 0.001*10; FillColor=ROOT.kBlack, Label="gg H\#rightarrow\#gamma\#gamma (powheg)", NormSystematic=0.1, TreeName="vbfTagDumper/trees/ggh_125_13TeV_GeneralDipho"
 
