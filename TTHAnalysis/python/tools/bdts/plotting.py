@@ -15,6 +15,7 @@ if __name__ == "__main__":
     parser.add_option("-v", "--varfile", dest="varfile", type="string", default="vars.pkl", help="Input pickle file (default: vars.pkl)");
     parser.add_option("-m", "--modelfile", dest="modelfile", type="string", default="model.h5", help="Input model file (default: model.h5)");
     parser.add_option("--pdir", "--print-dir", dest="printDir", type="string", default="plots", help="print out plots in this directory");
+    parser.add_option("--four-classes", dest="fourclasses", action="store_true", default=False, help="Make a custom class for L1 samples");
     (options, args) = parser.parse_args()
 
     outname = options.printDir
@@ -48,38 +49,54 @@ if __name__ == "__main__":
     for ext in ['png','pdf']:
         plt.savefig(outname+'/roc.'+ext)
 
-    nvars = 10
+    nvars = 13
     for var in range(nvars):
         together = np.dstack( (x[:,var], y ) )[0]
         
         class1 =  (together[together[:,1] == 0]) [:,0]
         class2 =  (together[together[:,1] == 1]) [:,0]
         class3 =  (together[together[:,1] == 2]) [:,0]
+        if options.fourclasses:
+            class4 =  (together[together[:,1] == 3]) [:,0]
 
         bins = 20
         plt.clf()
-        plt.hist(class1, bins, alpha=0.5,density=True, label='vbfH')
-        plt.hist(class2, bins, alpha=0.5,density=True, label='ggH')
-        plt.hist(class3, bins, alpha=0.5,density=True, label='other')
+        if options.fourclasses:
+            plt.hist(class1, bins, alpha=0.5,density=True, label='vbfH')
+            plt.hist(class1, bins, alpha=0.5,density=True, label='vbfL1H')
+            plt.hist(class2, bins, alpha=0.5,density=True, label='ggH')
+            plt.hist(class3, bins, alpha=0.5,density=True, label='other')
+        else:
+            plt.hist(class1, bins, alpha=0.5,density=True, label='vbfH')
+            plt.hist(class2, bins, alpha=0.5,density=True, label='ggH')
+            plt.hist(class3, bins, alpha=0.5,density=True, label='other')
         plt.legend(loc='upper right')
         plt.show()
     
         for ext in ['png','pdf']:
             plt.savefig('{o}/input_{var}.{ext}'.format(o=outname,var=var,ext=ext))
 
-    nnodes = 3
+    nnodes = 4 if options.fourclasses else 3
     for node in range(nnodes):
         together = np.dstack( (prediction[:,node], y ) )[0]
-        
         class1 =  (together[together[:,1] == 0]) [:,0]
         class2 =  (together[together[:,1] == 1]) [:,0]
         class3 =  (together[together[:,1] == 2]) [:,0]
+        if options.fourclasses:
+            class4 =  (together[together[:,1] == 3]) [:,0]
         
         bins = 20
         plt.clf()
-        plt.hist(class1, bins, alpha=0.5,density=True, label='vbfH')
-        plt.hist(class2, bins, alpha=0.5,density=True, label='ggH')
-        plt.hist(class3, bins, alpha=0.5,density=True, label='other')
+        if options.fourclasses:
+            plt.hist(class1, bins, alpha=0.5,density=True, label='vbfH')
+            plt.hist(class2, bins, alpha=0.5,density=True, label='vbfL1H')
+            plt.hist(class3, bins, alpha=0.5,density=True, label='ggH')
+            plt.hist(class4, bins, alpha=0.5,density=True, label='other')
+        else:
+            plt.hist(class1, bins, alpha=0.5,density=True, label='vbfH')
+            plt.hist(class2, bins, alpha=0.5,density=True, label='ggH')
+            plt.hist(class3, bins, alpha=0.5,density=True, label='other')
+            
         plt.legend(loc='upper right')
         plt.show()
 
@@ -90,13 +107,22 @@ if __name__ == "__main__":
     class1 =  (together[together[:,1] == 0]) [:,0]
     class2 =  (together[together[:,1] == 1]) [:,0]
     class3 =  (together[together[:,1] == 2]) [:,0]
+    if options.fourclasses:
+        class4 =  (together[together[:,1] == 3]) [:,0]
 
     bins = 20
     plt.clf()
-    plt.hist(class1, bins, alpha=0.5,density=True, label='vbfH')
-    plt.hist(class2, bins, alpha=0.5,density=True, label='ggH')
-    plt.hist(class3, bins, alpha=0.5,density=True, label='other')
+    if options.fourclasses:
+        plt.hist(class1, bins, alpha=0.5,density=True, label='vbfH')
+        plt.hist(class2, bins, alpha=0.5,density=True, label='vbfL1H')
+        plt.hist(class3, bins, alpha=0.5,density=True, label='ggH')
+        plt.hist(class4, bins, alpha=0.5,density=True, label='other')
+    else:
+        plt.hist(class1, bins, alpha=0.5,density=True, label='vbfH')
+        plt.hist(class2, bins, alpha=0.5,density=True, label='ggH')
+        plt.hist(class3, bins, alpha=0.5,density=True, label='other')
         
+
     plt.legend(loc='upper left')
     plt.show()
     

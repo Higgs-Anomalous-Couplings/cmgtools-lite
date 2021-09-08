@@ -1,6 +1,8 @@
 import ROOT as r 
 import numpy as np
-import pickle,math,os
+import pickle,math,os,matplotlib
+matplotlib.use('ps')
+import matplotlib.pyplot as plt
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
 
@@ -13,7 +15,7 @@ from keras import optimizers
 def getCompiledModelA(nvars,nnodes):
     # optimal so far ( 0.980, 0.966)
     model = Sequential()
-    model.add(Dense(10,input_dim=nvars, activation='relu'))
+    model.add(Dense(13,input_dim=nvars, activation='relu'))
     model.add(Dense(6, activation='relu'))
     model.add(Dense(nnodes, activation='softmax'))
     adam = optimizers.adam(lr=1e-4) 
@@ -22,9 +24,9 @@ def getCompiledModelA(nvars,nnodes):
 
 def getCompiledModelB(nvars,nnodes):
     model = Sequential()
-    model.add(Dense(10,input_dim=nvars, activation='relu'))
+    model.add(Dense(13,input_dim=nvars, activation='relu'))
     model.add(Dropout(0.4))
-    model.add(Dense(6, activation='relu'))
+    model.add(Dense(10, activation='relu'))
     model.add(Dropout(0.4))
     model.add(Dense(6, activation='relu'))
     model.add(Dense(nnodes, activation='softmax'))
@@ -75,20 +77,28 @@ if __name__ == "__main__":
     parser = OptionParser(usage="%prog [options]")
     parser.add_option("-i", "--infile", dest="infile", type="string", default="vars.pkl", help="Input pickle file (default: vars.pkl)");
     parser.add_option("-o", "--outfile", dest="outfile", type="string", default="trained_model", help="Output pb and h5 fil;e (default: trained_model)");
+    parser.add_option("--four-classes", dest="fourclasses", action="store_true", default=False, help="Make a custom class for L1 samples");
     (options, args) = parser.parse_args()
 
-    nvars = 10
+    nvars = 13
 
     data = pickle.load( open(options.infile,'rb'))
     sums = np.sum(data['train_y'],axis=0)
-    print(sums)
+    print "sums = ",sums
+    norm = np.sum(sums)
 
-    sig = sums[0]
-    bkg = sums[1] + sums[2]
-
-    class_weight = { 0 : float((sig+bkg)/sig),
-                     1 : float((sig+bkg)/bkg),
-                     2 : float((sig+bkg)/bkg)}
+    # sorting of the types in makeTrainDataset.py is fundamental for this
+    if options.fourclasses:
+        class_weight = { 0 : float(norm/sums[0]),
+                         1 : float(norm/sums[1]),
+                         2 : float(norm/sums[2]),
+                         3 : float(norm/sums[3])}
+    else:
+        sig = sums[0]
+        bkg = sums[1] + sums[2]
+        class_weight = { 0 : float(norm/sums[0]),
+                         1 : float(norm/sums[1]),
+                         2 : float(norm/sums[2])}
 
     print ('weights will be', class_weight)
 
@@ -97,11 +107,23 @@ if __name__ == "__main__":
             inter_op_parallelism_threads=50)) as sess:
         K.set_session(sess)
         
-        nnodes = 3
+        nnodes = 4 if options.fourclasses else 3
         model = getCompiledModelA(nvars,nnodes)
         #model = getCompiledModelB(nvars,nnodes)
 
-        history = model.fit( data['train_x'], data['train_y'], epochs=5, batch_size=200, validation_data=(data['test_x'], data['test_y']), class_weight=class_weight)
+        n_batch=4000
+        history = model.fit( data['train_x'], data['train_y'], epochs=100, batch_size=n_batch, validation_data=(data['test_x'], data['test_y']), class_weight=class_weight)
+        print history.history.keys()
+
+        # plot learning curves
+        plt.plot(history.history['acc'], label='train')
+        plt.plot(history.history['val_acc'], label='test')
+        plt.xlabel('iteration')
+        plt.ylabel('accuracy')
+        plt.title('batch='+str(n_batch), pad=-40)
+        plt.show()
+        for ext in ['png','pdf']:
+            plt.savefig('training_curve.'+ext)
 
         modelname = os.getcwd()+'/'+os.path.basename(options.outfile).split('.')[0]
         # keras model (H5)
