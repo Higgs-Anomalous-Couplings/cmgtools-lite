@@ -9,40 +9,44 @@ from multiprocessing import Pool
 testCut   = lambda ev: ev.event%5==0
 trainCut  = lambda ev: ev.event%5!=0
 
-def getVar(ev, l, s):
-    return getattr(ev,'LepClean_Recl_%s'%s)[l]
-
-
 commonFeatureList = [
-    "leadJPt"  ,
-    "leadJEta" ,
-    "subJPt"   ,
-    "subJEta"   ,
-    "leadGPtOverM" , 
-    "subGPtOverM" , 
+    "leadJPt",
+    "leadJEta",
+    "subJPt",
+    "subJEta",
+    "leadGPtOverM",
+    "subGPtOverM",
     "mJJ",
-    "dijet_dipho_dphi",
-    "diphoCosDphi",
-    "dipho_PToM"
+    "centrality",
+    "dijet_dipho_dphi_trunc",
+    "dijet_abs_dEta",
+    "dijet_dphi",
+    "dijet_minDRJetPho",
+    "dipho_PToM",
  ]
 
 
 features = {
 
     "leadJPt"          : lambda ev : ev.dijet_LeadJPt if ev.dijet_nj >= 2 else -9,
-    "leadJEta"         : lambda ev : abs(ev.dijet_LeadJPt) if ev.dijet_nj >= 2 else -9,
+    "leadJEta"         : lambda ev : abs(ev.dijet_leadEta) if ev.dijet_nj >= 2 else -9,
     "subJPt"           : lambda ev : ev.dijet_SubJPt if ev.dijet_nj >= 2 else -9,
-    "subJEta"          : lambda ev : abs(ev.dijet_SubJPt) if ev.dijet_nj >= 2 else -9,
+    "subJEta"          : lambda ev : abs(ev.dijet_subleadEta) if ev.dijet_nj >= 2 else -9,
     "leadGPtOverM"     : lambda ev : ev.leadPho_PToM, 
     "subGPtOverM"      : lambda ev : ev.sublPho_PToM,
     "mJJ"              : lambda ev : ev.dijet_Mjj,
-    "dijet_dipho_dphi" : lambda ev : ev.dijet_dipho_dphi if ev.dijet_nj >= 2 else -9,
-    "diphoCosDphi"     : lambda ev : ev.dipho_cosphi,
+    "centrality"       : lambda ev : ev.dijet_centrality_gg,
+    "dijet_dipho_dphi_trunc" : lambda ev : ev.dijet_dipho_dphi_trunc if ev.dijet_nj >= 2 else -9,
+    "dijet_abs_dEta"   : lambda ev : ev.dijet_abs_dEta if ev.dijet_nj >= 2 else -9,
+    "dijet_dphi"       : lambda ev : ev.dijet_dphi if ev.dijet_nj >= 2 else -9,
+    "dijet_minDRJetPho": lambda ev : ev.dijet_minDRJetPho if ev.dijet_nj >= 2 else -9,
     "dipho_PToM"       : lambda ev : ev.dipho_PToM,
     }
 
 cuts = {
     'vbfH' : lambda ev : (abs(ev.dipho_leadEta) < 2.5 and abs(ev.dipho_subleadEta) < 2.5 and (abs(ev.dipho_leadEta) < 1.44 or abs(ev.dipho_leadEta) > 1.57) and (abs(ev.dipho_subleadEta) < 1.44 or abs(ev.dipho_subleadEta) > 1.57)) and ev.dipho_mass > 100.0 and ev.dipho_mass < 180.0 and ev.dipho_lead_ptoM > 0.333 and ev.dipho_sublead_ptoM > 0.25 and ev.dipho_leadIDMVA > -0.2 and ev.dipho_subleadIDMVA > -0.2 and ev.dijet_abs_dEta > 0.0 and abs(ev.dijet_leadEta) < 4.7 and abs(ev.dijet_subleadEta) < 4.7 and ev.dijet_minDRJetPho > 0.4 and ev.dijet_LeadJPt > 40. and ev.dijet_SubJPt > 30. and ev.dijet_Mjj > 250.0,
+
+    'vbfL1H' : lambda ev : (abs(ev.dipho_leadEta) < 2.5 and abs(ev.dipho_subleadEta) < 2.5 and (abs(ev.dipho_leadEta) < 1.44 or abs(ev.dipho_leadEta) > 1.57) and (abs(ev.dipho_subleadEta) < 1.44 or abs(ev.dipho_subleadEta) > 1.57)) and ev.dipho_mass > 100.0 and ev.dipho_mass < 180.0 and ev.dipho_lead_ptoM > 0.333 and ev.dipho_sublead_ptoM > 0.25 and ev.dipho_leadIDMVA > -0.2 and ev.dipho_subleadIDMVA > -0.2 and ev.dijet_abs_dEta > 0.0 and abs(ev.dijet_leadEta) < 4.7 and abs(ev.dijet_subleadEta) < 4.7 and ev.dijet_minDRJetPho > 0.4 and ev.dijet_LeadJPt > 40. and ev.dijet_SubJPt > 30. and ev.dijet_Mjj > 250.0,
     
     'ggH' : lambda ev : (abs(ev.dipho_leadEta) < 2.5 and abs(ev.dipho_subleadEta) < 2.5 and (abs(ev.dipho_leadEta) < 1.44 or abs(ev.dipho_leadEta) > 1.57) and (abs(ev.dipho_subleadEta) < 1.44 or abs(ev.dipho_subleadEta) > 1.57)) and ev.dipho_mass > 100.0 and ev.dipho_mass < 180.0 and ev.dipho_lead_ptoM > 0.333 and ev.dipho_sublead_ptoM > 0.25 and ev.dipho_leadIDMVA > -0.2 and ev.dipho_subleadIDMVA > -0.2 and ev.dijet_abs_dEta > 0.0 and abs(ev.dijet_leadEta) < 4.7 and abs(ev.dijet_subleadEta) < 4.7 and ev.dijet_minDRJetPho > 0.4 and ev.dijet_LeadJPt > 40. and ev.dijet_SubJPt > 30. and ev.dijet_Mjj > 250.0,
 
@@ -55,14 +59,21 @@ classes = {
     'other'     : { 'cut': cuts['other'], 'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
 }
 
+vbfL1Hclass = {
+    'vbfL1H'    : { 'cut': cuts['vbfL1H'],'lst_train' : [], 'lst_test' : [] , 'lst_y_train' : [], 'lst_y_test' : [] },
+}
 
 sampleDir='/eos/cms/store/group/phys_higgs/emanuele/vbfhgg_ac/VBFHiggs_UL2017_09July2021/'
 
-vbfSamples   = []
+vbfSMSamples   = []
+vbfCPSamples   = []
+vbfL1Samples = []
 ggHSamples   = []
 otherSamples = []
 
-vbfSamples.extend( ['output_VBFHToGG_M-125_TuneCP5_13TeV-powheg-pythia8.root', 'output_VBFHToGG_M125_TuneCP5_13TeV-amcatnlo-pythia8.root'] )
+vbfSMSamples.extend( ['output_VBFHToGG_M-125_TuneCP5_13TeV-powheg-pythia8.root', 'output_VBFHToGG_M125_TuneCP5_13TeV-amcatnlo-pythia8.root'] )
+vbfCPSamples.extend( ['output_VBFHiggs0Mf05ph0ToGG_M125_TuneCP5_13TeV-JHUGenV7011-pythia8.root', 'output_VBFHiggs0MToGG_M125_TuneCP5_13TeV-JHUGenV7011-pythia8.root', 'output_VBFHiggs0PHf05ph0ToGG_M125_TuneCP5_13TeV-JHUGenV7011-pythia8.root', 'output_VBFHiggs0PHToGG_M125_TuneCP5_13TeV-JHUGenV7011-pythia8.root'] )
+vbfL1Samples.extend( ['output_VBFHiggs0L1ToGG_M125_TuneCP5_13TeV-JHUGenV7011-pythia8.root', 'output_VBFHiggs0L1f05ph0ToGG_M125_TuneCP5_13TeV-JHUGenV7011-pythia8.root', 'output_VBFHiggs0L1Zgf05ph0ToGG_M125_TuneCP5_13TeV-JHUGenV7011-pythia8.root'] )
 ggHSamples.extend( ['output_GluGluHToGG_M-125_TuneCP5_13TeV-powheg-pythia8.root', 'output_GluGluHToGG_M125_TuneCP5_13TeV-amcatnloFXFX-pythia8.root'] )
 otherSamples.extend( ['output_DiPhotonJetsBox_MGG-80toInf_13TeV-sherpa.root','output_DiPhotonJetsBox_M40_80-sherpa.root'] )
 
@@ -76,6 +87,7 @@ def toNumpy(featureList,maxEntries,task):
     print("file = ",fil,"  typs = ",typs)
     tdir = 'vbfTagDumper/trees/'
     treenames = {'vbfH'  : 'vbf_125_13TeV_GeneralDipho',
+                 'vbfL1H': 'vbf_125_13TeV_GeneralDipho',
                  'ggH'   : 'ggh_125_13TeV_GeneralDipho',
                  'other' : 'dipho_13TeV_GeneralDipho'}
     tfile = r.TFile(fil); ttree = tfile.Get('vbfTagDumper/trees/{tname}'.format(tname=treenames[typs[0]]))
@@ -106,15 +118,25 @@ if __name__ == "__main__":
 
     from optparse import OptionParser
     parser = OptionParser(usage="%prog [options]")
-    parser.add_option("--max-entries",   dest="maxEntries", default=1000000000, type="int", help="Max entries to process in each tree")
-    parser.add_option("-o", "--outfile", dest="outfile", type="string", default="vars.pkl", help="Output pickle file (default: vars.pkl)");
+    parser.add_option("--max-entries",    dest="maxEntries", default=1000000000, type="int", help="Max entries to process in each tree")
+    parser.add_option("-o",   "--outfile",  dest="outfile", type="string", default="vars.pkl", help="Output pickle file (default: vars.pkl)");
+    parser.add_option("--cp", "--add-cp-samples", dest="addcpsamples", action="store_true", default=False, help="Add also the alternative CP samples to the signal");
+    parser.add_option("--l1", "--add-l1-samples", dest="addl1samples", action="store_true", default=False, help="Add also the alternative Lambda1 samples to the signal");
+    parser.add_option("--four-classes", dest="fourclasses", action="store_true", default=False, help="Make a custom class for L1 samples");
     (options, args) = parser.parse_args()
 
     tasks = []
     print('Setting up the tasks')
-    sigSamples = vbfSamples
+    vbfSamples = vbfSMSamples
+    if options.addcpsamples: 
+        vbfSamples = vbfSamples+vbfCPSamples
+    if options.addl1samples and not options.fourclasses:
+        vbfSamples = vbfSamples+vbfL1Samples
     for samp in vbfSamples:
         tasks.append( (sampleDir+'/'+samp, ['vbfH']) )
+    if options.fourclasses:
+        for samp in vbfL1Samples:
+            tasks.append( (sampleDir+'/'+samp, ['vbfL1H']) )
     for samp in ggHSamples:
         tasks.append( (sampleDir+'/'+samp, ['ggH']) )
     for samp in otherSamples:
@@ -123,18 +145,22 @@ if __name__ == "__main__":
     print('Numpy conversion. It will take time...')
     print("max entries = ",options.maxEntries)
 
+    if options.fourclasses:
+        classes.update(vbfL1Hclass)
+
     featureList = commonFeatureList
     for cl,vals in classes.iteritems():
         vals['cut'] = cuts[cl]
 
     ## lxplus seems to have 10 cores/each
-    p =  Pool(min(30,len(vbfSamples+ggHSamples+otherSamples)))
+    p =  Pool(min(30,len(vbfSamples+vbfL1Samples+ggHSamples+otherSamples)))
     func = partial(toNumpy,featureList,options.maxEntries)
     results = list(tqdm.tqdm(p.imap(func, tasks), total=len(tasks)))
 
     print('Now putting everything together')
 
-    types = ['vbfH', 'ggH', 'other']
+    ## for later training, is useful to have types sorted in this way
+    types = ['vbfH', 'vbfL1H', 'ggH', 'other'] if options.fourclasses else ['vbfH', 'ggH', 'other']
     for result in results: 
         for ty in types:
             if ty+'_train' in result:
