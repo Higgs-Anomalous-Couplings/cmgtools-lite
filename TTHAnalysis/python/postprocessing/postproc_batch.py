@@ -22,6 +22,7 @@ from CMGTools.TTHAnalysis.postprocessing.framework.postprocessor import PostProc
 DEFAULT_MODULES = [("CMGTools.TTHAnalysis.postprocessing.examples.eventVars_2g", "recoMelaCentral"),
                    ]
 
+
 def writeCondorCfg(logdir, name, flavour=None, maxRunTime=None,maxMemory=4000):
 
     #if not os.path.isfile(logdir+'/dummy_exec.sh'):
@@ -57,7 +58,7 @@ request_memory = {mem}
         job_desc += '+MaxRuntime = %s\n' % maxruntime
     if os.environ['USER'] in ['mdunser', 'psilva']:
         job_desc += '+AccountingGroup = "group_u_CMST3.all"\n'
-    if os.environ['USER'] in ['mciprian']:
+    if os.environ['USER'] in ['emanuele']:
         job_desc += '+AccountingGroup = "group_u_CMS.CAF.ALCA"\n'
     ##job_desc += 'queue 1\n'
 
@@ -117,6 +118,19 @@ if __name__ == "__main__":
     jobs = []
     for D in glob(treedir+"/output_*"):
         treename = options.tree
+        
+        # override this... flashhgg have different treename depending on the sample
+        if 'GluGluH' in D:
+            treename = 'vbfTagDumper/trees/ggh_125_13TeV_GeneralDipho'
+        elif 'DiPho' in D:
+            treename = 'vbfTagDumper/trees/dipho_13TeV_GeneralDipho'
+        elif 'GJet' in D:
+            treename = 'vbfTagDumper/trees/gjet_anyfake_13TeV_GeneralDipho'
+        elif 'VBF' in D:
+            treename = 'vbfTagDumper/trees/vbf_125_13sTeV_GeneralDipho'
+        else:
+            treename = 'vbfTagDumper/trees/Data_13TeV_GeneralDipho'
+
         fname    = D
         if os.path.exists(fname) or (os.path.exists("%s/%s/tree.root.url" % (D,options.tree))):
             short = os.path.basename(D).replace('output_','').replace('.root','')
@@ -146,7 +160,7 @@ if __name__ == "__main__":
             chunk = options.chunkSize
             if entries < chunk:
                 print "  ",os.path.basename(D),("  DATA" if data else "  MC")," single chunk"
-                jobs.append((short,fname,entries,"_Friend_%s"%short,data,xrange(entries),-1))
+                jobs.append((short,treename,fname,entries,"_Friend_%s"%short,data,xrange(entries),-1))
             else:
                 nchunk = int(math.ceil(entries/float(chunk)))
                 print "  ",os.path.basename(D),("  DATA" if data else "  MC")," %d chunks" % nchunk
@@ -154,7 +168,7 @@ if __name__ == "__main__":
                     if options.chunks != []:
                         if i not in options.chunks: continue
                     r = xrange(int(i*chunk),min(int((i+1)*chunk),entries))
-                    jobs.append((short,fname,entries,"_Friend.chunk%d" % i,data,r,i))
+                    jobs.append((short,treename,fname,entries,"_Friend.chunk%d" % i,data,r,i))
 
     print "\n"
     print "I have %d taks to process" % len(jobs)
@@ -190,7 +204,7 @@ if __name__ == "__main__":
         if options.friend: 
             friendPost += " --friend " 
         cmds = []
-        for (name,fin,entries,fout,data,_range,chunk) in jobs:
+        for (name,treename,fin,entries,fout,data,_range,chunk) in jobs:
             if not chunk or chunk == -1:
                 condorSubFile = writeCondorCfg(logdir,name,maxRunTime=options.runtime,maxMemory=options.memory)
             #if chunk != -1:
@@ -212,7 +226,7 @@ if __name__ == "__main__":
 
     maintimer = ROOT.TStopwatch()
     def _runIt(myargs):
-        (dataset,fin,entries,fout,data,_range,chunk) = myargs
+        (dataset,treename,fin,entries,fout,data,_range,chunk) = myargs
         modules = []
         for mod, names in imports: 
             import_module(mod)
@@ -225,13 +239,14 @@ if __name__ == "__main__":
                     if len(options.modules) and name not in options.modules: continue
                     print "Loading %s from %s " % (name, mod)
                     print "Running on dataset = ",dataset
+                    print "Using tree = ",treename
                     signal = any(x in dataset for x in options.signals.split(','))
                     modules.append(getattr(obj,name)())
         if options.noOut:
             if len(modules) == 0: 
                 raise RuntimeError("Running with --noout and no modules does nothing!")
         ppargs=[fin]+args
-        p=PostProcessor(options.tree,outdir,ppargs,options.cut,options.branchsel,modules,options.compression,options.friend,fout,options.json,options.noOut,options.justcount,_range)
+        p=PostProcessor(treename,outdir,ppargs,options.cut,options.branchsel,modules,options.compression,options.friend,fout,options.json,options.noOut,options.justcount,_range)
         p.run()
 
     print 'this is jobs', jobs

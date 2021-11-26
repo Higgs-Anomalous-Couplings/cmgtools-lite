@@ -18,8 +18,8 @@ class EventVars2Gam(Module):
         self.namebranches += ["ptH","pxH","pyH","pzH","EH","rapH","rapHJJ",
                               "pxj1", "pyj1", "pzj1", "Ej1",
                               "pxj2", "pyj2", "pzj2", "Ej2",
-                              "ptph1","pxph1","pyph1","pzph1","Eph1",
-                              "ptph2","pxph2","pyph2","pzph2","Eph2",
+                              "ptpho1","pxpho1","pypho1","pzpho1","Epho1",
+                              "ptpho2","pxpho2","pypho2","pzpho2","Epho2",
         ]
 
         self.systsJEC = {0:""} #, 1:"_jecUp", -1:"_jecDown"} if doSystJEC else {0:""}
