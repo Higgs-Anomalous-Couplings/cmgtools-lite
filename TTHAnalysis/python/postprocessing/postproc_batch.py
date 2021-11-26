@@ -118,22 +118,22 @@ if __name__ == "__main__":
     jobs = []
     for D in glob(treedir+"/output_*"):
         treename = options.tree
+        short = os.path.basename(D).replace('output_','').replace('.root','')
         
         # override this... flashhgg have different treename depending on the sample
-        if 'GluGluH' in D:
+        if 'GluGluH' in short:
             treename = 'vbfTagDumper/trees/ggh_125_13TeV_GeneralDipho'
-        elif 'DiPho' in D:
+        elif 'DiPho' in short:
             treename = 'vbfTagDumper/trees/dipho_13TeV_GeneralDipho'
-        elif 'GJet' in D:
+        elif 'GJet' in short:
             treename = 'vbfTagDumper/trees/gjet_anyfake_13TeV_GeneralDipho'
-        elif 'VBF' in D:
-            treename = 'vbfTagDumper/trees/vbf_125_13sTeV_GeneralDipho'
+        elif 'VBF' in short:
+            treename = 'vbfTagDumper/trees/vbf_125_13TeV_GeneralDipho'
         else:
             treename = 'vbfTagDumper/trees/Data_13TeV_GeneralDipho'
 
         fname    = D
         if os.path.exists(fname) or (os.path.exists("%s/%s/tree.root.url" % (D,options.tree))):
-            short = os.path.basename(D).replace('output_','').replace('.root','')
             if options.datasets != []:
                 if short not in options.datasets: continue
             if options.datasetsRgx != None:
@@ -197,7 +197,7 @@ if __name__ == "__main__":
             print "ERROR. Scheduler ",options.env," not implemented. Choose either 'lsf' or 'condor'."
             sys.exit(1)
 
-        basecmd = " {self} -N {chunkSize} -t {tree} --signals {signals} --moduleList {moduleList} {data} {output}".format(
+        basecmd = " {self} -N {chunkSize} -t {tree} --moduleList {moduleList} {data} {output}".format(
                     self=sys.argv[0], chunkSize=options.chunkSize, tree=options.tree, signals=options.signals, moduleList=options.moduleList, data=treedir, output=outdir)
 
         friendPost = ""
@@ -249,7 +249,7 @@ if __name__ == "__main__":
         p=PostProcessor(treename,outdir,ppargs,options.cut,options.branchsel,modules,options.compression,options.friend,fout,options.json,options.noOut,options.justcount,_range)
         p.run()
 
-    print 'this is jobs', jobs
+    #print 'this is jobs', jobs
     if options.jobs > 1:
         from multiprocessing import Pool
         pool = Pool(options.jobs)
