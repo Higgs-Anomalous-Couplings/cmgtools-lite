@@ -120,15 +120,15 @@ class EventVars2Gam(Module):
             ret["pg1g4za"] = self.m.computeProdP(False) - ret["pg1"] - ret["pg2za"]
             
             ### DISCRIMINANTS ###
-            ret["D0minus"] = ret["pg1"] / (ret["pg1"] + constants["c_0minus"]*constants["c_0minus"]*ret["pg4"])
-            ret["D0hplus"] = ret["pg1"] / (ret["pg1"] + constants["c_0hplus"]*constants["c_0hplus"]*ret["pg2"])
-            ret["DCP"] = ret["pg1g4"] / (2 * (ret["pg1"] * ret["pg4"]) ** 0.5)
-            ret["Dint"] = ret["pg1g2"] / (2 * (ret["pg1"] * ret["pg2"]) ** 0.5)
+            ret["D0minus"] = ret["pg1"] / (ret["pg1"] + constants["c_0minus"]*constants["c_0minus"]*ret["pg4"]) if ret["pg1"]*ret["pg4"]>0 else -900
+            ret["D0hplus"] = ret["pg1"] / (ret["pg1"] + constants["c_0hplus"]*constants["c_0hplus"]*ret["pg2"]) if ret["pg1"]*ret["pg2"]>0 else -900
+            ret["DCP"] = ret["pg1g4"] / (2 * (ret["pg1"] * ret["pg4"]) ** 0.5) if ret["pg1"]*ret["pg4"]>0 else -900
+            ret["Dint"] = ret["pg1g2"] / (2 * (ret["pg1"] * ret["pg2"]) ** 0.5) if ret["pg1"]*ret["pg2"]>0 else -900
             
-            ret["D0minus_za"] = ret["pg1"] / (ret["pg1"] + constants["c_0minusza"]*constants["c_0minusza"]*ret["pg4za"])
-            ret["D0hplus_za"] = ret["pg1"] / (ret["pg1"] + constants["c_0hplusza"]*constants["c_0hplusza"]*ret["pg2za"])
-            ret["DCP_za"] = ret["pg1g4za"] / (2 * (ret["pg1"] * ret["pg4za"]) ** 0.5)
-            ret["Dint_za"] = ret["pg1g2za"] / (2 * (ret["pg1"] * ret["pg2za"]) ** 0.5)
+            ret["D0minus_za"] = ret["pg1"] / (ret["pg1"] + constants["c_0minusza"]*constants["c_0minusza"]*ret["pg4za"]) if ret["pg1"]*ret["pg4za"]>0 else -900
+            ret["D0hplus_za"] = ret["pg1"] / (ret["pg1"] + constants["c_0hplusza"]*constants["c_0hplusza"]*ret["pg2za"]) if ret["pg1"]*ret["pg4"]>0 else -900
+            ret["DCP_za"] = ret["pg1g4za"] / (2 * (ret["pg1"] * ret["pg4za"]) ** 0.5) if ret["pg1"]*ret["pg4za"]>0 else -900
+            ret["Dint_za"] = ret["pg1g2za"] / (2 * (ret["pg1"] * ret["pg2za"]) ** 0.5) if ret["pg1"]*ret["pg2za"]>0 else -900
      
             ### kinematic variables ###
             ret["q2V1"], ret["q2V2"], ret["costheta1"], ret["costheta2"], ret["Phi"], ret["costhetastar"], ret["Phi1"]= self.m.computeVBFAngles()
