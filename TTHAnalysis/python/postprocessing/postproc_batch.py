@@ -204,15 +204,16 @@ if __name__ == "__main__":
         if options.friend: 
             friendPost += " --friend " 
         cmds = []
-        for (name,treename,fin,entries,fout,data,_range,chunk) in jobs:
-            if not chunk or chunk == -1:
+        for ijob,(name,treename,fin,entries,fout,data,_range,chunk) in enumerate(jobs):
+            if not chunk or chunk == -1 or ijob==0:
                 condorSubFile = writeCondorCfg(logdir,name,maxRunTime=options.runtime,maxMemory=options.memory)
-            #if chunk != -1:
+            else:
+                condorSubFile = logdir+'/'+name+'.condor'
             if options.env == 'condor':
                 tmp_f = open(condorSubFile, 'a')
                 tmp_f.write('arguments = {base} -d {data} {chunk} {post} \n queue 1 \n\n'.format(base=basecmd, data=name, chunk='' if chunk == -1 else '-c '+str(chunk), post=friendPost))
                 tmp_f.close()
-                if chunk <= 0:
+                if chunk==-1 or ijob == len(jobs)-1:
                     cmds.append('condor_submit ' + condorSubFile)
             else:
                 print 'option --env MUST be condor (which it is by default)'
