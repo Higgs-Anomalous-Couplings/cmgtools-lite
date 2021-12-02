@@ -84,3 +84,18 @@ dijet_mva_prob_ggH : dijet_mva_prob_ggH: 50,0,1.0; XTitle="ggH probability (VBF 
 
 dijet_mva_prob_bkg : dijet_mva_prob_bkg: 50,0,1.0; XTitle="Bkg probability (VBF MVA)", Legend='TC', IncludeOverflows=True, Logy=True
 
+D0minus : D0minus: 50,0,1.0; XTitle="D_{0-}", Legend='TC', IncludeOverflows=True, Logy=False
+
+D0hplus : D0hplus: 50,0,1.0; XTitle="D_{0h+}", Legend='TC', IncludeOverflows=True, Logy=False
+
+DCP : DCP: 50,-1,1.0; XTitle="D_{CP}", Legend='TC', IncludeOverflows=True, Logy=False
+
+Dint : Dint: 50,-1,1.0; XTitle="D_{int}", Legend='TC', IncludeOverflows=True, Logy=False
+
+D0minus_za : D0minus_za: 50,0,1.0; XTitle="D_{0-}^{Z#gamma}", Legend='TC', IncludeOverflows=True, Logy=False
+
+D0hplus_za : D0hplus_za: 50,0,1.0; XTitle="D_{0h+}^{Z#gamma}", Legend='TC', IncludeOverflows=True, Logy=False
+
+DCP_za : DCP_za: 50,-1,1.0; XTitle="D_{CP}^{Z#gamma}", Legend='TC', IncludeOverflows=True, Logy=False
+
+Dint_za : Dint_za: 50,-1,1.0; XTitle="D_{int}^{Z#gamma}", Legend='TC', IncludeOverflows=True, Logy=False
