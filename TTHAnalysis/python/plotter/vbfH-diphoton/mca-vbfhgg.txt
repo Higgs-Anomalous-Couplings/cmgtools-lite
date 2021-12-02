@@ -20,11 +20,11 @@ VBFL1   : output_VBFHiggs0L1ToGG_M125* : 0.001; FillColor=ROOT.kMagenta  , Label
 
 VBFL1f05   : output_VBFHiggs0L1f05ph0ToGG_M125* : 0.001; FillColor=ROOT.kGreen+2  , Label="VBF H\#rightarrow\#gamma\#gamma (f_{\#Lambda1} = 0.5)", NormSystematic=0.1, TreeName="vbfTagDumper/trees/vbf_125_13TeV_GeneralDipho"
 
-VBFfa3f1   : output_VBFHiggs0MToGG_M125* : 0.001; FillColor=ROOT.kBlue  , Label="VBF H\#rightarrow\#gamma\#gamma (f_{a3} = 1.0)", NormSystematic=0.1, TreeName="vbfTagDumper/trees/vbf_125_13TeV_GeneralDipho"
+VBFfa3   : output_VBFHiggs0MToGG_M125* : 0.001; FillColor=ROOT.kBlue  , Label="VBF H\#rightarrow\#gamma\#gamma (f_{a3} = 1.0)", NormSystematic=0.1, TreeName="vbfTagDumper/trees/vbf_125_13TeV_GeneralDipho"
 
 VBFfa3f05   : output_VBFHiggs0Mf05ph0ToGG_M125* : 0.001; FillColor=ROOT.kAzure+1  , Label="VBF H\#rightarrow\#gamma\#gamma (f_{a3} = 0.5)", NormSystematic=0.1, TreeName="vbfTagDumper/trees/vbf_125_13TeV_GeneralDipho"
 
-VBFfa2f1   : output_VBFHiggs0PHToGG_M125* : 0.001; FillColor=ROOT.kOrange+1  , Label="VBF H\#rightarrow\#gamma\#gamma (f_{a2} = 1.0)", NormSystematic=0.1, TreeName="vbfTagDumper/trees/vbf_125_13TeV_GeneralDipho"
+VBFfa2   : output_VBFHiggs0PHToGG_M125* : 0.001; FillColor=ROOT.kOrange+1  , Label="VBF H\#rightarrow\#gamma\#gamma (f_{a2} = 1.0)", NormSystematic=0.1, TreeName="vbfTagDumper/trees/vbf_125_13TeV_GeneralDipho"
 
 VBFfa2f05   : output_VBFHiggs0PHf05ph0ToGG_M125* : 0.001; FillColor=ROOT.kBlack, Label="VBF H\#rightarrow\#gamma\#gamma (f_{a2} = 0.5)", NormSystematic=0.1, TreeName="vbfTagDumper/trees/vbf_125_13TeV_GeneralDipho"
 
