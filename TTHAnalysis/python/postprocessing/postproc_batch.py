@@ -160,7 +160,7 @@ if __name__ == "__main__":
             chunk = options.chunkSize
             if entries < chunk:
                 print "  ",os.path.basename(D),("  DATA" if data else "  MC")," single chunk"
-                jobs.append((short,treename,fname,entries,"_Friend_%s"%short,data,xrange(entries),-1))
+                jobs.append((short,treename,fname,entries,"_Friend_%s"%short,data,xrange(entries),-1,1))
             else:
                 nchunk = int(math.ceil(entries/float(chunk)))
                 print "  ",os.path.basename(D),("  DATA" if data else "  MC")," %d chunks" % nchunk
@@ -168,7 +168,7 @@ if __name__ == "__main__":
                     if options.chunks != []:
                         if i not in options.chunks: continue
                     r = xrange(int(i*chunk),min(int((i+1)*chunk),entries))
-                    jobs.append((short,treename,fname,entries,"_Friend.chunk%d" % i,data,r,i))
+                    jobs.append((short,treename,fname,entries,"_Friend.chunk%d" % i,data,r,i,nchunk))
 
     print "\n"
     print "I have %d taks to process" % len(jobs)
@@ -197,23 +197,23 @@ if __name__ == "__main__":
             print "ERROR. Scheduler ",options.env," not implemented. Choose either 'lsf' or 'condor'."
             sys.exit(1)
 
-        basecmd = " {self} -N {chunkSize} -t {tree} --moduleList {moduleList} {data} {output}".format(
-                    self=sys.argv[0], chunkSize=options.chunkSize, tree=options.tree, signals=options.signals, moduleList=options.moduleList, data=treedir, output=outdir)
+        basecmd = " {self} -N {chunkSize} --moduleList {moduleList} {data} {output}".format(
+                    self=sys.argv[0], chunkSize=options.chunkSize, signals=options.signals, moduleList=options.moduleList, data=treedir, output=outdir)
 
         friendPost = ""
         if options.friend: 
             friendPost += " --friend " 
         cmds = []
-        for ijob,(name,treename,fin,entries,fout,data,_range,chunk) in enumerate(jobs):
+        for ijob,(name,treename,fin,entries,fout,data,_range,chunk,nchunk) in enumerate(jobs):
             if not chunk or chunk == -1 or ijob==0:
                 condorSubFile = writeCondorCfg(logdir,name,maxRunTime=options.runtime,maxMemory=options.memory)
             else:
                 condorSubFile = logdir+'/'+name+'.condor'
             if options.env == 'condor':
                 tmp_f = open(condorSubFile, 'a')
-                tmp_f.write('arguments = {base} -d {data} {chunk} {post} \n queue 1 \n\n'.format(base=basecmd, data=name, chunk='' if chunk == -1 else '-c '+str(chunk), post=friendPost))
+                tmp_f.write('arguments = {base} -t {tree} -d {data} {chunk} {post} \n queue 1 \n\n'.format(base=basecmd, tree=treename, data=name, chunk='' if chunk == -1 else '-c '+str(chunk), post=friendPost))
                 tmp_f.close()
-                if chunk==-1 or ijob == len(jobs)-1:
+                if chunk==-1 or chunk==nchunk-1:
                     cmds.append('condor_submit ' + condorSubFile)
             else:
                 print 'option --env MUST be condor (which it is by default)'
@@ -227,7 +227,7 @@ if __name__ == "__main__":
 
     maintimer = ROOT.TStopwatch()
     def _runIt(myargs):
-        (dataset,treename,fin,entries,fout,data,_range,chunk) = myargs
+        (dataset,treename,fin,entries,fout,data,_range,chunk,nchunk) = myargs
         modules = []
         for mod, names in imports: 
             import_module(mod)
