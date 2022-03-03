@@ -122,15 +122,17 @@ if __name__ == "__main__":
         
         # override this... flashhgg have different treename depending on the sample
         if 'GluGluH' in short:
-            treename = 'vbfTagDumper/trees/ggh_125_13TeV_GeneralDipho'
+            treename = 'tagsDumper/trees/ggh_125_13TeV_VBFTag'
         elif 'DiPho' in short:
-            treename = 'vbfTagDumper/trees/dipho_13TeV_GeneralDipho'
+            treename = 'tagsDumper/trees/dipho_13TeV_VBFTag'
         elif 'GJet' in short:
-            treename = 'vbfTagDumper/trees/gjet_anyfake_13TeV_GeneralDipho'
+            treename = 'tagsDumper/trees/gjet_anyfake_13TeV_VBFTag'
+        elif 'JHUGen' in short:
+            treename = 'tagsDumper/trees/%s_13TeV_VBFTag' % short
         elif 'VBF' in short:
-            treename = 'vbfTagDumper/trees/vbf_125_13TeV_GeneralDipho'
+            treename = 'tagsDumper/trees/vbf_125_13TeV_VBFTag'
         else:
-            treename = 'vbfTagDumper/trees/Data_13TeV_GeneralDipho'
+            treename = 'tagsDumper/trees/Data_13TeV_VBFTag'
 
         fname    = D
         if os.path.exists(fname) or (os.path.exists("%s/%s/tree.root.url" % (D,options.tree))):
@@ -155,6 +157,7 @@ if __name__ == "__main__":
             f = ROOT.TFile.Open(fname+"?readaheadsz=65535");
 
             t = f.Get(treename)
+            print "getting entries of tree = ",treename," for sample ",fname
             entries = t.GetEntries()
             f.Close()
             chunk = options.chunkSize

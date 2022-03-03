@@ -58,9 +58,9 @@ class EventVars2Gam(Module):
                                         getattr(event,'dipho_%sPhi'%index),
                                         0)
                 daughters.push_back(SimpleParticle_t(22,photons[i]))
-                jets[i].SetPtEtaPhiM(getattr(event,'gghMVA_%sJPt'%index.replace('s','S')), # hope I never find who wrote these variables... 
-                                     getattr(event,'gghMVA_%sEta'%index),
-                                     getattr(event,'gghMVA_%sPhi'%index),
+                jets[i].SetPtEtaPhiM(getattr(event,'dijet_%sPt'%index), 
+                                     getattr(event,'dijet_%sEta'%index),
+                                     getattr(event,'dijet_%sPhi'%index),
                                      0)
                 associated.push_back(SimpleParticle_t(1,jets[i]))
      
