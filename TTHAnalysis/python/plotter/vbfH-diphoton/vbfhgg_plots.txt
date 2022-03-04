@@ -30,9 +30,9 @@ dipho_pt: dipho_pt: 30,0,300; XTitle="p_{T}^{#gamma#gamma}", Legend='TC', Includ
 
 dijet_dipho_pt: dijet_dipho_pt: 30,0,300; XTitle="p_{T}^{jj#gamma#gamma}", Legend='TC', IncludeOverflows=True, Logy=True
 
-dijet_LeadJPt: dijet_LeadJPt: 100,0,500; XTitle="Leading jet p_{T} (GeV)", Legend='TC', IncludeOverflows=True, Logy=True
+dijet_leadPt: dijet_leadPt: 100,0,500; XTitle="Leading jet p_{T} (GeV)", Legend='TC', IncludeOverflows=True, Logy=True
 
-dijet_SubJPt: dijet_SubJPt: 100,0,300; XTitle="Subleading jet p_{T} (GeV)", Legend='TC', IncludeOverflows=True, Logy=True
+dijet_subleadPt: dijet_subleadPt: 100,0,300; XTitle="Subleading jet p_{T} (GeV)", Legend='TC', IncludeOverflows=True, Logy=True
 
 dijet_pt: dijet_pt: 50,0,500; XTitle="p_{T}^{jj}", Legend='TC', IncludeOverflows=True, Logy=True
 
