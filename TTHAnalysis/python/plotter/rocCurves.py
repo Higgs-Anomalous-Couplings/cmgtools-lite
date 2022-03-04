@@ -8,19 +8,19 @@ if "/fakeRate_cc.so" not in ROOT.gSystem.GetLibraries():
 
 def hist2ROC1d(hsig,hbg):
     bins = hsig.GetNbinsX()+2
-    si = [ hsig.GetBinContent(i) for i in xrange(bins) ]
-    bi = [  hbg.GetBinContent(i) for i in xrange(bins) ]
+    si = [ hsig.GetBinContent(i) for i in range(bins) ]
+    bi = [  hbg.GetBinContent(i) for i in range(bins) ]
     if hsig.GetMean() > hbg.GetMean():
         si.reverse(); bi.reverse()
     sums,sumb = sum(si), sum(bi)
     if sums == 0 or sumb == 0: 
         return None
-    for i in xrange(1,bins): 
+    for i in range(1,bins): 
         si[i] += si[i-1]
         bi[i] += bi[i-1]
     fullsi, fullbi = si[:], bi[:]
     si, bi = [], [];
-    for i in xrange(1,bins):
+    for i in range(1,bins):
         # skip negative weights
         if len(si) > 0 and (fullsi[i] < si[-1] or fullbi[i] < bi[-1]):
             continue
@@ -32,7 +32,7 @@ def hist2ROC1d(hsig,hbg):
         si = [si[0]]; bi = [ bi[0] ]
     bins = len(si)
     ret = ROOT.TGraph(bins)
-    for i in xrange(bins):
+    for i in range(bins):
         ret.SetPoint(i, bi[i]/sumb, si[i]/sums)
     ret.dim=1
     return ret
@@ -40,28 +40,28 @@ def hist2ROC1d(hsig,hbg):
 def hist2ROC2d(hsig,hbg):
     binsx = hsig.GetNbinsX()
     binsy = hsig.GetNbinsY()
-    si = [ [ hsig.GetBinContent(ix,iy) for ix in xrange(1,binsx+1) ] for iy in xrange(1,binsy+1) ]
-    bi = [ [  hbg.GetBinContent(ix,iy) for ix in xrange(1,binsx+1) ] for iy in xrange(1,binsy+1) ]
+    si = [ [ hsig.GetBinContent(ix,iy) for ix in range(1,binsx+1) ] for iy in range(1,binsy+1) ]
+    bi = [ [  hbg.GetBinContent(ix,iy) for ix in range(1,binsx+1) ] for iy in range(1,binsy+1) ]
     sumsi = [ sum(s) for s in si ]
     sums,sumb = sum([sum(s) for s in si]), sum([sum(b) for b in bi])
     if hsig.GetMean(1) > hbg.GetMean(1): 
         si.reverse(); bi.reverse()
-    for ix in xrange(0,binsx):
+    for ix in range(0,binsx):
         if hsig.GetMean(2) > hbg.GetMean(2): 
             si[ix].reverse()
             bi[ix].reverse()
-        for iy in xrange(1,binsx): 
+        for iy in range(1,binsx): 
             si[ix][iy] += si[ix][iy-1]
             bi[ix][iy] += bi[ix][iy-1]
-    for ix in xrange(1,binsx):
-        for iy in xrange(1,binsx): 
+    for ix in range(1,binsx):
+        for iy in range(1,binsx): 
             si[ix][iy] += si[ix-1][iy]
             bi[ix][iy] += bi[ix-1][iy]
     bins = binsx*binsy
     ret = ROOT.TGraph(bins)
     i = 0
-    for ix in xrange(binsx): 
-        for iy in xrange(binsx): 
+    for ix in range(binsx): 
+        for iy in range(binsx): 
             ret.SetPoint(i, bi[ix][iy]/sumb, si[ix][iy]/sums)
             i += 1
     ret.dim=2
@@ -69,8 +69,8 @@ def hist2ROC2d(hsig,hbg):
 
 def refineRoc2dim(graph):
     # partially taken from https://en.wikibooks.org/wiki/Algorithm_Implementation/Geometry/Convex_hull/Monotone_chain#Python
-    points = [ (graph.GetX()[i],graph.GetY()[i]) for i in xrange(graph.GetN()) if graph.GetX()[i] != 1 ]
-    points.sort(key = lambda (x,y) : -x)
+    points = [ (graph.GetX()[i],graph.GetY()[i]) for i in range(graph.GetN()) if graph.GetX()[i] != 1 ]
+    points.sort(key = lambda x_y : -x_y[0])
     final = []
     def cross(o, a, b):
         return (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0])
@@ -92,7 +92,7 @@ def makeROC(plotmap,mca,sname="signal",bname="background"):
     elif sig.ClassName() in [ "TH2F", "TH2D" ]:
         ret = hist2ROC2d(sig,bkg)
         if not ret: return ret
-    else: raise RuntimeError, "Can't make a ROC from a "+sig.ClassName()
+    else: raise RuntimeError("Can't make a ROC from a "+sig.ClassName())
     ret.GetXaxis().SetTitle("Eff Background")
     ret.GetYaxis().SetTitle("Eff Signal")
     return ret
@@ -107,7 +107,7 @@ def doLegend(rocs,textSize=0.035,placement='BR'):
             (x1,y1,x2,y2) = (.68, .25 + textSize*max(len(rocs)-3,0), .962, .13)
         elif placement == 'TL':
             (x1,y1,x2,y2) = (.21, .83 - textSize*max(len(rocs)-3,0), .492, .95)
-        else: raise RuntimeError, "Unsupported placement %r" % placement
+        else: raise RuntimeError("Unsupported placement %r" % placement)
         leg = ROOT.TLegend(x1,y1,x2,y2)
         leg.SetFillColor(0)
         leg.SetShadowColor(0)
@@ -140,7 +140,7 @@ def stackRocks(outname,outfile,rocs,xtit,ytit,options):
         if options.logx: frame.GetXaxis().SetTitleOffset(1.0)
         frame.Draw();
         for title,roc in rocs:
-            if (roc.GetN() == 0): print "No points in "+title
+            if (roc.GetN() == 0): print("No points in "+title)
             roc.Draw(roc.style+" SAME")
     else:
         allrocs.Draw("APL");

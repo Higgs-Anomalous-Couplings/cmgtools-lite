@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 #from mcPlots import *
-from CMGTools.TTHAnalysis.plotter.mcPlots import *
+from mcPlots import *
 
 if "/fakeRate_cc.so" not in ROOT.gSystem.GetLibraries():
-    ROOT.gROOT.ProcessLine(".L %s/src/CMGTools/TTHAnalysis/python/plotter/fakeRate.cc+" % os.environ['CMSSW_BASE']);
+    ROOT.gROOT.ProcessLine(".L fakeRate.cc+");
 
 if "/bin2Dto1Dlib_cc.so" not in ROOT.gSystem.GetLibraries():
-    ROOT.gROOT.ProcessLine(".L %s/src/CMGTools/TTHAnalysis/python/plotter/bin2Dto1Dlib.cc+" % os.environ['CMSSW_BASE']);
+    ROOT.gROOT.ProcessLine(".L bin2Dto1Dlib.cc+");
 
 def addMCEfficiencyOptions(parser):
     addMCAnalysisOptions(parser)
@@ -54,7 +54,7 @@ def doLegend(rocs,options,textSize=0.035):
 
 def effFromH2D(h2d,options,uncertainties="CP"):
     points = []
-    for xbin in xrange(1,h2d.GetNbinsX()+1):
+    for xbin in range(1,h2d.GetNbinsX()+1):
         xval = h2d.GetXaxis().GetBinCenter(xbin)
         if options.xcut and (xval < options.xcut[0] or xval > options.xcut[1]):
             continue
@@ -63,7 +63,7 @@ def effFromH2D(h2d,options,uncertainties="CP"):
         yall = ypass+yfail
         if yall <= 0: continue
         if ypass < 0:
-            print "Warning: effFromH2D for %s at x = %g: ypass = %g +- %g  yfail = %g +- %g\n" % (h2d.GetName(), xval, ypass, ypassErr, yfail, yfailErr)
+            print("Warning: effFromH2D for %s at x = %g: ypass = %g +- %g  yfail = %g +- %g\n" % (h2d.GetName(), xval, ypass, ypassErr, yfail, yfailErr))
             if uncertainties == "CP": continue
             if ypass + 2*ypassErr < 0: continue
             ypass, yall = 0, yfail
@@ -110,7 +110,7 @@ def stackEffs(outname,x,effs,options):
     if effs[0][1].ClassName() == "TProfile2D": 
         return stackInXYSlices(outname,x,effs,options)
     if effs[0][1].ClassName() != "TGraphAsymmErrors": 
-        print "Cannot stack %s: %s" % (effs[0][1].GetName(), effs[0][1].ClassName())
+        print("Cannot stack %s: %s" % (effs[0][1].GetName(), effs[0][1].ClassName()))
         return
     first = effs[0][1]
     if hasattr(first, '_xrange'): 
@@ -121,7 +121,7 @@ def stackEffs(outname,x,effs,options):
 
     ymax = 0 
     for title, eff in effs:
-        ymax = max(ymax, max([ eff.GetY()[i] + eff.GetErrorYhigh(i)*1.3 for i in xrange(eff.GetN()) ]))
+        ymax = max(ymax, max([ eff.GetY()[i] + eff.GetErrorYhigh(i)*1.3 for i in range(eff.GetN()) ]))
 
     frame = ROOT.TH1D("frame","frame",100,xmin,xmax)
     frame.GetXaxis().SetTitle(first.GetXaxis().GetTitle())
@@ -184,7 +184,7 @@ def stackEffs(outname,x,effs,options):
         dump.write(" ===  %s === \n" % n)
         dump.write("  x min    x max      eff   -err   +err  \n")
         dump.write("-------- --------    ----- ------ ------ \n")
-        for i in xrange(e.GetN()):
+        for i in range(e.GetN()):
             dump.write("%8.3f %8.3f    %.3f -%.3f +%.3f \n" % (
                  e.GetX()[i]-e.GetErrorXlow(i),
                  e.GetX()[i]+e.GetErrorXhigh(i),
@@ -204,7 +204,7 @@ def graphFromSlice(h,axis,bins):
         ret.SetName(h.GetName()+"_slice"+axis)
         return ret
 def graphFromXSlice(h,ybin):
-    return graphFromSlice(h,"X", [ (i,ybin) for i in xrange(1,h.GetNbinsX()+1)  ])
+    return graphFromSlice(h,"X", [ (i,ybin) for i in range(1,h.GetNbinsX()+1)  ])
 
 def stackInXYSlices(outname,x,effs,options):
     h2d = effs[0][1]
@@ -214,8 +214,8 @@ def stackInXYSlices(outname,x,effs,options):
     for sliceaxis in 0,1:
         runaxis = 1-sliceaxis
         sliceobj = axes[sliceaxis]
-        for islice in xrange(1,nbins[sliceaxis]+1):
-            bins = [ ((i,islice) if runaxis == 0 else (islice,i)) for i in xrange(1,nbins[runaxis]+1) ]
+        for islice in range(1,nbins[sliceaxis]+1):
+            bins = [ ((i,islice) if runaxis == 0 else (islice,i)) for i in range(1,nbins[runaxis]+1) ]
             slice_effs = [ (n,graphFromSlice(h,names[runaxis],bins)) for (n,h) in effs ]
             stackEffs(outname.replace(".root",".slice%s_bin%d.root" % (names[sliceaxis],islice+1)),
                       slice_effs, bins, options)
@@ -228,14 +228,14 @@ def doEffRatio(x,effs,frame,options):
     unity   = effrels[0]; ref = effs[0][1]
     rmin, rmax = 1,1
     def find(graph, x):
-        for i in xrange(graph.GetN()):
+        for i in range(graph.GetN()):
             if graph.GetX()[i]-graph.GetErrorYlow(i) <= x:
                 if x <= graph.GetX()[i]+graph.GetErrorYhigh(i):
                     return i
         return -1
     for ie,eff in enumerate(effrels):
         points = []
-        for b in xrange(eff.GetN()):
+        for b in range(eff.GetN()):
             xv = eff.GetX()[b]
             b2 = find(ref, xv)
             if b2 == -1: continue
@@ -297,13 +297,13 @@ def makeDataSub(report,mca):
         #print "subtracting background %s from data with systematic %r" % (p,syst)
         if syst <= 0: continue
         if "TH1" in b.ClassName():
-            for bx in xrange(1,b.GetNbinsX()+1):
+            for bx in range(1,b.GetNbinsX()+1):
                 data_sub_syst.SetBinError(bx, hypot(data_sub_syst.GetBinError(bx), syst * b.GetBinContent(bx)))
         elif "TH2" in b.ClassName():
-            for (bx,by) in itertools.product(range(1,b.GetNbinsX()+1), range(1,b.GetNbinsY()+1)):
+            for (bx,by) in itertools.product(list(range(1,b.GetNbinsX()+1)), list(range(1,b.GetNbinsY()+1))):
                 data_sub_syst.SetBinError(bx, by, hypot(data_sub_syst.GetBinError(bx, by), syst * b.GetBinContent(bx, by)))
         elif "TH3" in b.ClassName():
-            for (bx,by,bz) in itertools.product(range(1,b.GetNbinsX()+1), range(1,b.GetNbinsY()+1), range(1,b.GetNbinsZ()+1)):
+            for (bx,by,bz) in itertools.product(list(range(1,b.GetNbinsX()+1)), list(range(1,b.GetNbinsY()+1)), list(range(1,b.GetNbinsZ()+1))):
                 data_sub_syst.SetBinError(bx, by, bz, hypot(data_sub_syst.GetBinError(bx, by, bz), syst * b.GetBinContent(bx, by, bz)))
     report['data_sub']      = data_sub
     report['data_sub_syst'] = data_sub_syst
@@ -334,8 +334,8 @@ def makeEff(mca,cut,idplot,xvarplot,returnSeparatePassFail=False,notDoProfile="a
     if 'data' in report and 'background' in report:
         makeDataSub(report, mca)
     if notDoProfile and not returnSeparatePassFail:
-        if is2D: report = dict([(title, effFromH3D(hist,mainOptions)) for (title, hist) in report.iteritems()])
-        else:    report = dict([(title, effFromH2D(hist,mainOptions)) for (title, hist) in report.iteritems()])
+        if is2D: report = dict([(title, effFromH3D(hist,mainOptions)) for (title, hist) in report.items()])
+        else:    report = dict([(title, effFromH2D(hist,mainOptions)) for (title, hist) in report.items()])
     return report
 
 def styleEffsByProc(effmap,procs,mca):
@@ -395,7 +395,7 @@ if __name__ == "__main__":
 #            PrintHisto(eff)
             if options.xcut and eff.ClassName() != "TGraphAsymmErrors":
                 ax = eff.GetXaxis()
-                for b in xrange(1,eff.GetNbinsX()+1):
+                for b in range(1,eff.GetNbinsX()+1):
                     if ax.GetBinCenter(b) < options.xcut[0] or ax.GetBinCenter(b) > options.xcut[1]:
                         eff.SetBinContent(b,0)
                         eff.SetBinError(b,0)
@@ -420,7 +420,7 @@ if __name__ == "__main__":
                 outfile.WriteTObject(eff)
                 effratio = eff.ProjectionX("_px") if is1d else eff.Project3D("yx")
                 effratio.Reset()
-                for b1 in xrange(len(binsfail)):
+                for b1 in range(len(binsfail)):
                     passing = eff.GetBinContent(binspass[b1])
                     failing = eff.GetBinContent(binsfail[b1])
                     bx = ROOT.Long(0)

@@ -56,17 +56,17 @@ class ParamSampler:
     def scan(self,mca,cut,fom,algo):
         best, bval = None, None
         allpoints = self.getAllPoints()
-        print "I have %d points to test... please sit back and relax." % len(allpoints)
+        print("I have %d points to test... please sit back and relax." % len(allpoints))
         for i,point in enumerate(allpoints):
-            print "trying point ",i,": ",point,
+            print("trying point ",i,": ",point, end=' ')
             fomval = self.onepoint(mca,cut,fom,point)
-            print "     ---> ",fomval
+            print("     ---> ",fomval)
             if best == None or bval[0] < fomval[0]:
                 best = point
                 bval = fomval
         return (best,bval)
     def scan1(self,mca,cut,fom,algo,param,cursor,value):
-        print "Scanning %s values [ %s ] starting from %s" % (param.name, param.getPoints(), cursor )
+        print("Scanning %s values [ %s ] starting from %s" % (param.name, param.getPoints(), cursor ))
         best, bval = cursor[param.name], value
         for pv in param.getPoints():
             if pv == best: continue
@@ -82,23 +82,23 @@ class ParamSampler:
             values = param.getPoints()
             index = values.index(cursor[param.name])
             newneigh = []
-            for i in xrange(max(0,index-size),min(index+size,len(values)-1)+1):
+            for i in range(max(0,index-size),min(index+size,len(values)-1)+1):
                 for prefix in neighbours:
                     newneigh.append( prefix + [ (param.name, values[i]) ] )
             neighbours = newneigh
         neighbours = [ dict(x) for x in neighbours ]
-        print "Scanning all the %d neighbours within %d: " % (len(neighbours), size)
+        print("Scanning all the %d neighbours within %d: " % (len(neighbours), size))
         best, bval = cursor, value
         for i,point in enumerate(neighbours):
             fomval = self.onepoint(mca,cut,fom,point)
             if fomval[0] > bval[0]:
-                print "  %6d ---> %s (improvement)" % (i,fomval) 
+                print("  %6d ---> %s (improvement)" % (i,fomval)) 
                 best = point; bval = fomval
         if bval[0] > value[0]:
-            print "   found new best point %s fom value %s" % (best, bval)
+            print("   found new best point %s fom value %s" % (best, bval))
         return (best, bval, bval[0] > value[0])
     def step1(self,mca,cut,fom,algo,param,cursor,value):
-        print "Stepping %s values [ %s ] starting from %s at %s" % (param.name, param.getPoints(), cursor, value )
+        print("Stepping %s values [ %s ] starting from %s at %s" % (param.name, param.getPoints(), cursor, value ))
         best, bval = cursor[param.name], value
         values  = param.getPoints()
         index = values.index(cursor[param.name])
@@ -113,7 +113,7 @@ class ParamSampler:
                 break
         if moved: 
             cursor[param.name] = best; 
-            print "   moved %s to %s, fom value %s" % (param.name, best, bval)
+            print("   moved %s to %s, fom value %s" % (param.name, best, bval))
             return (cursor, bval, True)
         iright = index + 1
         while iright < len(values):
@@ -126,18 +126,18 @@ class ParamSampler:
                 break
         if moved:
             cursor[param.name] = best;
-            print "   moved %s to %s, fom value %s" % (param.name, best, bval)
+            print("   moved %s to %s, fom value %s" % (param.name, best, bval))
             return (cursor, bval, True)
         cursor[param.name] = best;
-        print "   did not move %s from %s at  %s" % (param.name, best, bval)
+        print("   did not move %s from %s at  %s" % (param.name, best, bval))
         return (cursor, bval, False)
     def walk(self,mca,cut,fom,algo):
         cursor = dict( [ (p.name,p.value) for p in self._params ] )
         fomval = self.onepoint(mca,cut,fom,cursor)
-        print "Starting point: %s (fomval = %s)" % (cursor, fomval)
+        print("Starting point: %s (fomval = %s)" % (cursor, fomval))
         active  = dict([ (p.name,True) for p in self._params ])
         constant = dict([ (p.name,len(p.getPoints()) == 1) for p in self._params ])
-        for iter in xrange(1000):
+        for iter in range(1000):
             walked = False
             lastactive = {}
             for p in self._params:
@@ -155,15 +155,15 @@ class ParamSampler:
                 active[p.name] = act
                 if act: walked = True
             if walked:
-                for pn in active.keys(): active[pn] = True
+                for pn in list(active.keys()): active[pn] = True
             else:
                 break
         return cursor, fomval
     def cloud(self,mca,cut,fom,algo):
         cursor = dict( [ (p.name,p.value) for p in self._params ] )
         fomval = self.onepoint(mca,cut,fom,cursor)
-        print "Starting point: %s (fomval = %s)" % (cursor, fomval)
-        for iter in xrange(1000):
+        print("Starting point: %s (fomval = %s)" % (cursor, fomval))
+        for iter in range(1000):
             (cursor, fomval, moved) = self.expand(mca,cut,fom,cursor,fomval,size=int(algo.replace("cloud:","")))
             if not moved:
                 break
@@ -171,14 +171,14 @@ class ParamSampler:
     def scipyOpt(self,mca,cut,fom,algo):
         cursor = dict( [ (p.name,p.value) for p in self._params ] )
         fomval = self.onepoint(mca,cut,fom,cursor)
-        print "Starting point: %s (fomval = %s)" % (cursor, fomval)
+        print("Starting point: %s (fomval = %s)" % (cursor, fomval))
         import scipy.optimize
         minimizer = getattr(scipy.optimize,algo.replace("scipy:",""))
         fun = ParamSampelFunctor(self,mca,cut,fom)
         ret = minimizer(fun, fun.x0)
         cursor = fun.int2ext(ret)
         fomval = self.onepoint(mca,cut,fom,cursor)
-        print "Ending point: %s (fomval = %s)" % (cursor, fomval)
+        print("Ending point: %s (fomval = %s)" % (cursor, fomval))
         return (cursor,fomval)
 class ParamSampelFunctor:
     def __init__(self,paramSampler,mca,cut,fom):
@@ -210,7 +210,7 @@ class ParamSampelFunctor:
         point = self.int2ext(x)
         fomval = self._sampler.onepoint(self._mca,self._cut,self._fom, point)
         self._i += 1
-        print "  %6d: %s --> %s " % (self._i, point,fomval)
+        print("  %6d: %s --> %s " % (self._i, point,fomval))
         return -fomval[0]
         
 class ParamFile:
@@ -281,9 +281,9 @@ if __name__ == "__main__":
     params = ParamFile(args[3],options)
     sampler = ParamSampler(params.allParams())
     (point,val) = sampler.optimize(mca,cuts.allCuts(),fom,algo)
-    print "The best set of parameters is "
-    for k,v in point.iteritems(): print "   %-20s: %8.3f" % (k,v)
-    print "The corresponding figure of merit is ",val
+    print("The best set of parameters is ")
+    for k,v in point.items(): print("   %-20s: %8.3f" % (k,v))
+    print("The corresponding figure of merit is ",val)
     cuts.setParams(point)
     report = mca.getYields(cuts,nodata=True)
     mca.prettyPrint(report)

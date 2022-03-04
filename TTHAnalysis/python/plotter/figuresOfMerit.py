@@ -2,7 +2,7 @@ from math import sqrt
 
 def _make_totals(mca, report, row=-1):
     tot_S, tot_B, tot_B_stat, tot_S_stat, tot_B_syst, tot_S_syst, data = 0, 0, 0, 0, 0, 0, 0
-    for key,rep in report.iteritems():
+    for key,rep in report.items():
         if key == 'data':
             data += rep[row][1][0]
         else:

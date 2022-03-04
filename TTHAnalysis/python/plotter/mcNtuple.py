@@ -49,7 +49,7 @@ class MCNtupleModule(Module):
     def endJob(self):
         if self.dumpFile:
             self.dumpTFile.WriteTObject(self.dumpTTree)
-            print "Wrote tree for %s with %d events" % (self.dumpFile, self.dumpTTree.GetEntries())
+            print("Wrote tree for %s with %d events" % (self.dumpFile, self.dumpTTree.GetEntries()))
             self.dumpTFile.Close()
             del self.dumpPyTree
             del self.dumpTTree

@@ -12,44 +12,44 @@ def _cloneNoDir(hist,name=''):
 def _projectionXNoDir(hist2d,name,y1,y2):
     nx = hist2d.GetNbinsX()
     ax = hist2d.GetXaxis()
-    xbins = array('f',[(ax.GetBinLowEdge(b+1) if b < nx else ax.GetBinUpEdge(b)) for b in xrange(0,nx+1)])
+    xbins = array('f',[(ax.GetBinLowEdge(b+1) if b < nx else ax.GetBinUpEdge(b)) for b in range(0,nx+1)])
     proj = ROOT.TH1D(name,name,nx,xbins); proj.SetDirectory(None)
     proj.GetXaxis().SetTitle(ax.GetTitle()) # in case
-    ys = range(y1,y2+1)
-    for ix in xrange(1,nx+1):
+    ys = list(range(y1,y2+1))
+    for ix in range(1,nx+1):
         proj.SetBinContent(ix, sum(hist2d.GetBinContent(ix,y) for y in ys))
         proj.SetBinError(ix, sqrt(sum(hist2d.GetBinError(ix,y)**2 for y in ys)))
     return proj
 
 def cropNegativeBins(histo):
             if "TH1" in histo.ClassName():
-                for b in xrange(0,histo.GetNbinsX()+2):
+                for b in range(0,histo.GetNbinsX()+2):
                     if histo.GetBinContent(b) < 0: histo.SetBinContent(b, 0.0)
             elif "TH2" in histo.ClassName():
-                for bx in xrange(0,histo.GetNbinsX()+2):
-                    for by in xrange(0,histo.GetNbinsY()+2):
+                for bx in range(0,histo.GetNbinsX()+2):
+                    for by in range(0,histo.GetNbinsY()+2):
                         if histo.GetBinContent(bx,by) < 0: histo.SetBinContent(bx,by, 0.0)
             elif "TH3" in histo.ClassName():
-                for bx in xrange(0,histo.GetNbinsX()+2):
-                    for by in xrange(0,histo.GetNbinsY()+2):
-                        for bz in xrange(0,histo.GetNbinsZ()+2):
+                for bx in range(0,histo.GetNbinsX()+2):
+                    for by in range(0,histo.GetNbinsY()+2):
+                        for bz in range(0,histo.GetNbinsZ()+2):
                             if histo.GetBinContent(bx,by,bz) < 0: histo.SetBinContent(bx,by,bz, 0.0)
 
 def _isNullHistogram(h):
     if h.Integral() != 0: return False
     if "TH1" in h.ClassName():
-        for b in xrange(0,h.GetNbinsX()+2):
+        for b in range(0,h.GetNbinsX()+2):
             if h.GetBinContent(b) != 0: return False
         return True
     elif "TH2" in h.ClassName():
-        for bx in xrange(1,h.GetNbinsX()+1):
-            for by in xrange(1,h.GetNbinsY()+1):
+        for bx in range(1,h.GetNbinsX()+1):
+            for by in range(1,h.GetNbinsY()+1):
                 if h.GetBinContent(bx,by) != 0: return False
         return True
     elif "TH3" in h.ClassName():
-        for bx in xrange(1,h.GetNbinsX()+1):
-          for by in xrange(1,h.GetNbinsY()+1):
-            for bz in xrange(1,h.GetNbinsZ()+1):
+        for bx in range(1,h.GetNbinsX()+1):
+          for by in range(1,h.GetNbinsY()+1):
+            for bz in range(1,h.GetNbinsZ()+1):
                if h.GetBinContent(bx,by,bz) != 0: return False
         return True
     elif "TGraph" in h.ClassName():
@@ -73,7 +73,7 @@ class RooFitContext:
             self._density = False
             axis = histo.GetXaxis()
             w0 = axis.GetBinWidth(1)
-            for b in xrange(2,histo.GetNbinsX()):
+            for b in range(2,histo.GetNbinsX()):
                 if axis.GetBinWidth(b) != w0:
                     self._rebin = True
                     break
@@ -89,7 +89,7 @@ class RooFitContext:
         if not self._rebin: return histo
         if "TH1" not in histo.ClassName(): raise RuntimeError("Unsupported for non-TH1")
         ret = _cloneNoDir(self._xdummy, histo.GetName()+"_rebin")
-        for b in xrange(1,histo.GetNbinsX()):
+        for b in range(1,histo.GetNbinsX()):
             scale = histo.GetXaxis().GetBinWidth(b) if self._density else 1.0
             ret.SetBinContent(b, scale * histo.GetBinContent(b))
         return ret
@@ -103,7 +103,7 @@ class RooFitContext:
             if "TH1" not in histo.ClassName(): raise RuntimeError("Unsupported for non-TH1")
             if target == None:
                 target = _cloneNoDir(self._histo, histo.GetName())
-            for b in xrange(1,histo.GetNbinsX()+1):
+            for b in range(1,histo.GetNbinsX()+1):
                 scale = 1.0/histo.GetXaxis().GetBinWidth(b) if self._density else 1.0
                 if add: target.SetBinContent(b, scale * histo.GetBinContent(b) + target.GetBinContent(b))
                 else:   target.SetBinContent(b, scale * histo.GetBinContent(b))
@@ -164,7 +164,7 @@ class PostFitSetup:
         dtoy = ROOT.RooDataSet("postFitToys","",obs)
         #print "Throwing %d toys of %d nuisances" % (ntoys, obs.getSize())
         #timer = ROOT.TStopwatch()
-        for i in xrange(ntoys):
+        for i in range(ntoys):
             obs.assignValueOnly(self.fitResult.randomizePars())
             dtoy.add(obs)
         #print "Thrown %d toys of %d nuisances in %.3f s" % (ntoys, obs.getSize(), timer.RealTime())
@@ -173,12 +173,12 @@ class PostFitSetup:
         if self.params == None: raise RuntimeError("Can't throw pre-fit toys without nuisances")
         obs = ROOT.RooArgSet(self.params).snapshot()
         dtoy = ROOT.RooDataSet("preFitToys","",obs)
-        print "Throwing %d pre-fit toys of %d nuisances" % (ntoys, obs.getSize())
+        print("Throwing %d pre-fit toys of %d nuisances" % (ntoys, obs.getSize()))
         #obs.Print("")
         #timer = ROOT.TStopwatch()
-        for i in xrange(ntoys):
+        for i in range(ntoys):
             it = obs.fwdIterator()
-            for i in xrange(obs.getSize()):
+            for i in range(obs.getSize()):
                 it.next().setVal(ROOT.gRandom.Gaus())
             dtoy.add(obs)
         #print "Thrown %d pre-fit toys of %d nuisances in %.3f s" % (ntoys, obs.getSize(), timer.RealTime())
@@ -188,8 +188,8 @@ class PostFitSetup:
         log = [ "FIT RESULT (status = %d, covQual %d, edm %g)" % (self.fitResult.status(), self.fitResult.covQual(), self.fitResult.edm()), [] ]
         init  = self.fitResult.floatParsInit()
         final = self.fitResult.floatParsFinal()
-        names = [ init.at(i).GetName() for i in xrange(init.getSize()) ]
-        maxlen = max(max(map(len,names)),15)
+        names = [ init.at(i).GetName() for i in range(init.getSize()) ]
+        maxlen = max(max(list(map(len,names))),15)
         nfmt  = "%%-%ds" % maxlen
         log.append( (nfmt+"     %-10s      %-10s +- %-10s      [ %-10s , %-10s ]") % ("Parameter", " PreFit", " PostFit", "   Err", "   Min", "   Max") )
         log.append( (nfmt+"     %-10s      %-10s----%-10s      --%-10s---%-10s--") % ("-"*maxlen, "-"*10, "-"*10, "-"*10, "-"*10, "-"*10) )
@@ -201,7 +201,7 @@ class PostFitSetup:
         
 class HistoWithNuisances:
     def __init__(self,histo_central,reset=False):
-        if isinstance(histo_central, HistoWithNuisances): raise RuntimeError, "Created with HWN instead of THn or TGraph"
+        if isinstance(histo_central, HistoWithNuisances): raise RuntimeError("Created with HWN instead of THn or TGraph")
         self.central = _cloneNoDir(histo_central, histo_central.GetName())
         self.nominal = self.central # pre-fit state
         self.variations = {}
@@ -216,7 +216,7 @@ class HistoWithNuisances:
         if self.nominal != self.central:
             ret['nominal'] = self.nominal; 
         variations = []
-        for (x,(v1,v2)) in self.variations.iteritems():
+        for (x,(v1,v2)) in self.variations.items():
             variations.append((x,(v1,v2)))
         ret['variations'] = variations
         return ret
@@ -243,14 +243,14 @@ class HistoWithNuisances:
     def isZero(self):
         if not _isNullHistogram(self.central): 
             return False
-        for v,p in self.variations.iteritems():
+        for v,p in self.variations.items():
             for h in p:
                 if not _isNullHistogram(h): return False
         return True
     def Clone(self,newname):
         h = HistoWithNuisances(_cloneNoDir(self.central, newname))
-        for v,p in self.variations.iteritems():
-            h.variations[v] = map(lambda x: _cloneNoDir(x,x.GetName()), p)
+        for v,p in self.variations.items():
+            h.variations[v] = [_cloneNoDir(x,x.GetName()) for x in p]
         if self.nominal == self.central:
             h.nominal = h.central
         else:
@@ -265,17 +265,17 @@ class HistoWithNuisances:
         self.variations = {}
         self._dropPdfAndNorm()
     def printVariations(self):
-        print 'central:',self.GetName(),self.Integral()
-        for (x,(v1,v2)) in self.variations.iteritems():
-            print x,v1.Integral() if v1 else '-',v2.Integral() if v2 else '-'
+        print('central:',self.GetName(),self.Integral())
+        for (x,(v1,v2)) in self.variations.items():
+            print(x,v1.Integral() if v1 else '-',v2.Integral() if v2 else '-')
     def Scale(self,x):
         if self._rooFit and 'norm' in self._rooFit:
             self._rooFit['norm'].setNominalValue(self.central.Integral() * x)
         self.central.Scale(x)
         if self.nominal != self.central: self.nominal.Scale(x)
-        for v,p in self.variations.iteritems(): map(lambda h: h.Scale(x), p)
+        for v,p in self.variations.items(): list(map(lambda h: h.Scale(x), p))
     def addRooFitScaleFactor(self,roofunc):
-        if not self._rooFit: raise RuntimeError, "Component was not roofitized before"
+        if not self._rooFit: raise RuntimeError("Component was not roofitized before")
         if "norm" not in self._rooFit: self._makePdfAndNorm()
         self._rooFit["norm"].addOtherFactor(roofunc)
         self._rooFit["scaleFactors"][roofunc.GetName()] = roofunc
@@ -289,9 +289,9 @@ class HistoWithNuisances:
     def sumSystUncertainties(self,toadd=None):
         """in each bin, this does max/min of (central,up,down) of each variation and then sums in quadrature upward and downward shifts"""
         if toadd == []: return [self.nominal,self.nominal]
-        if self._postFit and self._usePostFit and toadd != None: raise RuntimeError, "Selection of nuisances yet implemented for post-fit"
+        if self._postFit and self._usePostFit and toadd != None: raise RuntimeError("Selection of nuisances yet implemented for post-fit")
         if toadd == None: toadd = list(self.variations.keys())
-        if "TH" not in self.ClassName(): raise RuntimeError, 'Cannot compute systematic uncertainty for scatter plot'
+        if "TH" not in self.ClassName(): raise RuntimeError('Cannot compute systematic uncertainty for scatter plot')
         hempty = _cloneNoDir(self.central); hempty.Reset()
         htotup = _cloneNoDir(hempty, self.GetName()+'_systUp')
         htotdn = _cloneNoDir(hempty, self.GetName()+'_systDn')
@@ -299,14 +299,14 @@ class HistoWithNuisances:
             if "pdf" not in self._rooFit: self._makePdfAndNorm()
             toys = self._postFit.postFitToys()
             if "TH1" not in self.nominal.ClassName(): raise RuntimeError("Unsupported for non-TH1")
-            nom_bins = [ self.nominal.GetBinContent(b) for b in xrange(1,self.nominal.GetNbinsX()+1) ]
+            nom_bins = [ self.nominal.GetBinContent(b) for b in range(1,self.nominal.GetNbinsX()+1) ]
             sumw2s   = [ 0. for x in nom_bins ]
             #vals     = [ [] for x in nom_bins ]
             wvars    = self._rooFit["workspace"].allVars()
             pdf, norm = self._rooFit["pdf"], self._rooFit["norm"]
             roofit = self._rooFit["context"]
             #timer = ROOT.TStopwatch()
-            for i in xrange(toys.numEntries()):
+            for i in range(toys.numEntries()):
                 wvars.assignValueOnly(toys.get(i))
                 roofit.roopdf2hist("_toy", pdf, norm, target=hempty)
                 for ib,x0 in enumerate(nom_bins):
@@ -326,29 +326,29 @@ class HistoWithNuisances:
                 hvardn = _cloneNoDir(hempty)
                 hup, hdn = self.variations[var][0], self.variations[var][1]
                 if 'TH1' in self.ClassName():
-                    for b in xrange(1,self.GetNbinsX()+1):
+                    for b in range(1,self.GetNbinsX()+1):
                         hvarup.SetBinContent(b,max(self.GetBinContent(b),hup.GetBinContent(b),hdn.GetBinContent(b))-self.GetBinContent(b))
                         hvardn.SetBinContent(b,self.GetBinContent(b)-min(self.GetBinContent(b),hup.GetBinContent(b),hdn.GetBinContent(b)))
                 elif 'TH2' in self.ClassName():
-                    for b1 in xrange(1,self.GetNbinsX()+1):
-                        for b2 in xrange(1,self.GetNbinsY()+1):
+                    for b1 in range(1,self.GetNbinsX()+1):
+                        for b2 in range(1,self.GetNbinsY()+1):
                             hvarup.SetBinContent(b1,b2,max(self.GetBinContent(b1,b2),hup.GetBinContent(b1,b2),hdn.GetBinContent(b1,b2))-self.GetBinContent(b1,b2))
                             hvardn.SetBinContent(b1,b2,self.GetBinContent(b1,b2)-min(self.GetBinContent(b1,b2),hup.GetBinContent(b1,b2),hdn.GetBinContent(b1,b2)))
                 hvars[var]=[hvarup,hvardn]
             # sum in quadrature all the up envelopes and down envelopes
             if 'TH1' in self.ClassName():
-                for b in xrange(1,self.GetNbinsX()+1):
-                    htotup.SetBinContent(b,self.GetBinContent(b)+sqrt(sum(map(lambda x: (hvars[x][0].GetBinContent(b))**2, hvars))))
-                    htotdn.SetBinContent(b,self.GetBinContent(b)-sqrt(sum(map(lambda x: (hvars[x][1].GetBinContent(b))**2, hvars))))
+                for b in range(1,self.GetNbinsX()+1):
+                    htotup.SetBinContent(b,self.GetBinContent(b)+sqrt(sum([(hvars[x][0].GetBinContent(b))**2 for x in hvars])))
+                    htotdn.SetBinContent(b,self.GetBinContent(b)-sqrt(sum([(hvars[x][1].GetBinContent(b))**2 for x in hvars])))
             elif 'TH2' in self.ClassName():
-                for b1 in xrange(1,self.GetNbinsX()+1):
-                    for b2 in xrange(1,self.GetNbinsY()+1):
-                        htotup.SetBinContent(b1,b2,self.GetBinContent(b1,b2)+sqrt(sum(map(lambda x: (hvars[x][0].GetBinContent(b1,b2))**2, hvars))))
-                        htotdn.SetBinContent(b1,b2,self.GetBinContent(b1,b2)-sqrt(sum(map(lambda x: (hvars[x][1].GetBinContent(b1,b2))**2, hvars))))
+                for b1 in range(1,self.GetNbinsX()+1):
+                    for b2 in range(1,self.GetNbinsY()+1):
+                        htotup.SetBinContent(b1,b2,self.GetBinContent(b1,b2)+sqrt(sum([(hvars[x][0].GetBinContent(b1,b2))**2 for x in hvars])))
+                        htotdn.SetBinContent(b1,b2,self.GetBinContent(b1,b2)-sqrt(sum([(hvars[x][1].GetBinContent(b1,b2))**2 for x in hvars])))
         return [htotup,htotdn]
     def integralSystError(self,toadd=None,relative=False,symmetrize=True,cropAtZero=True):
         """Compute the systematic-only uncertainty on the integral. Does not add the MC statistics."""
-        if "TH" not in self.ClassName(): raise RuntimeError, 'Cannot compute systematic uncertainty for scatter plot'
+        if "TH" not in self.ClassName(): raise RuntimeError('Cannot compute systematic uncertainty for scatter plot')
         i0 = self.raw().Integral()
         if relative and i0 == 0: return 0 if symmetrize else (0,0)
         if self._postFit and self._usePostFit: 
@@ -358,7 +358,7 @@ class HistoWithNuisances:
                 wvars = self._rooFit["workspace"].allVars()
                 norm  = self._rooFit["norm"]
                 nominal, sumw2 = norm.getVal(), 0.0
-                for i in xrange(toys.numEntries()):
+                for i in range(toys.numEntries()):
                     wvars.assignValueOnly(toys.get(i))
                     sumw2 += (norm.getVal()-nominal)**2
                 wvars.assignValueOnly(self._postFit.fitResult.floatParsFinal()) # recover central values
@@ -384,7 +384,7 @@ class HistoWithNuisances:
         hup, hdn = self.sumSystUncertainties(toadd)
         xaxis = h.GetXaxis()
         points = []; errors = []
-        for i in xrange(h.GetNbinsX()):
+        for i in range(h.GetNbinsX()):
             N = h.GetBinContent(i+1);
             dN = h.GetBinError(i+1) if len(self.variations) == 0 else 0 #FIXME
             if N == 0 and (dN == 0 or relative): continue
@@ -408,7 +408,7 @@ class HistoWithNuisances:
         cropNegativeBins(self.nominal)
         if allVariations:
             cropNegativeBins(self.central)
-            for hs in self.variations.itervalues():
+            for hs in self.variations.values():
                 for h in hs: cropNegativeBins(h)
     def getCentral(self):
         return self.central
@@ -419,14 +419,14 @@ class HistoWithNuisances:
     def hasVariations(self):
         return bool(self.variations) 
     def getVariationList(self):
-        return self.variations.keys()
+        return list(self.variations.keys())
     def addVariation(self,name,sign,histo_varied, clone=True):
         idx = 0 if sign=='up' else 1
         if name not in self.variations: self.variations[name] = [None,None]
         self.variations[name][idx] = _cloneNoDir(histo_varied) if clone else histo_varied
         # invalidate caches
         if self._rooFit or self._postFit:
-            print "WARNING: adding a variantion on an object that already has roofit/postfit info"
+            print("WARNING: adding a variantion on an object that already has roofit/postfit info")
             self._rooFit  = None
             self._postFit = None
     def addBinByBin(self, namePattern="{name}_bbb_{bin}", ycutoff=1e-3, relcutoff=1e-2, verbose=False, norm=False, conservativePruning=False):
@@ -434,7 +434,7 @@ class HistoWithNuisances:
         ref = self.central
         ytot = ref.Integral()
         if (ytot == 0): return 
-        for b in xrange(1,ref.GetNbinsX()+1):
+        for b in range(1,ref.GetNbinsX()+1):
             y, e = ref.GetBinContent(b), ref.GetBinError(b)
             if y <= 0 or e < 0: continue
             if conservativePruning: # conservative adaptive pruning that was used in makeShapeCards in the past
@@ -444,7 +444,7 @@ class HistoWithNuisances:
                 if e/y    < relcutoff: continue
                 if e < 0.2*sqrt(y+1): continue
             if verbose: 
-                print "\tbin %3d: yield %9.1f +- %9.1f (rel %.5f), rel err. %.4f, poisson %.1f" % (b, y, e, y/ytot, e/y if y else 1, sqrt(y+1))
+                print("\tbin %3d: yield %9.1f +- %9.1f (rel %.5f), rel err. %.4f, poisson %.1f" % (b, y, e, y/ytot, e/y if y else 1, sqrt(y+1)))
             hi = _cloneNoDir(ref)
             lo = _cloneNoDir(ref)
             hi.SetBinContent(b, y+e)
@@ -456,7 +456,7 @@ class HistoWithNuisances:
             self.variations[nuis] = [ hi, lo ] 
             self.central.SetBinError(b, 0) # otherwise it's double-counted in the plots
         if self._rooFit or self._postFit:
-            print "WARNING: addBinByBinn on an object that already has roofit/postfit info"
+            print("WARNING: addBinByBinn on an object that already has roofit/postfit info")
             self._rooFit  = None
             self._postFit = None
     def isShapeVariation(self,name,tolerance=1e-5,debug=False):
@@ -467,12 +467,12 @@ class HistoWithNuisances:
         h0 = self.central
         for h in self.variations[name]:
             ratio = None 
-            for b in xrange(1,h0.GetNbinsX()+1):
+            for b in range(1,h0.GetNbinsX()+1):
                 y0 = h0.GetBinContent(b)
                 y  =  h.GetBinContent(b)
                 if debug: 
-                    print "  bin %3d  nominal %9.4f  varied %9.4f   ratio %8.5f   diff %8.5f" % (
-                                b, y0, y, (y/y0 if y0 else 1), y/y0-ratio if (ratio != None and y0 != 0) else 0)
+                    print("  bin %3d  nominal %9.4f  varied %9.4f   ratio %8.5f   diff %8.5f" % (
+                                b, y0, y, (y/y0 if y0 else 1), y/y0-ratio if (ratio != None and y0 != 0) else 0))
                 if (y0 == 0):
                     if (y != 0): return True
                 elif y == 0: 
@@ -493,7 +493,7 @@ class HistoWithNuisances:
         s02,su2,sd2 = 0,0,0
         reg_xy, reg_nx = [], 0
         xscale = 1.0/float(h.GetNbinsX())
-        for ib in xrange(h.GetNbinsX()):
+        for ib in range(h.GetNbinsX()):
             y0,yu,yd = h.GetBinContent(ib+1),hup.GetBinContent(ib+1),hdown.GetBinContent(ib+1) 
             if y0 == 0 and yu == 0 and yd == 0: continue
             e0,eu,ed = h.GetBinError(ib+1),hup.GetBinError(ib+1),hdown.GetBinError(ib+1) 
@@ -503,7 +503,7 @@ class HistoWithNuisances:
                 if yu > minRatio*y0 or yd > minRatio*y0: reg_nx += 1
             s0 += y0; su += yu; sd += yd
             s02 += e0**2; su2 += eu**2; sd2 += ed**2
-        if debug: print "Template for %s %s %s effective unweighted events: %9.2f" % (binname, h.GetName(), var, s0**2/s02)
+        if debug: print("Template for %s %s %s effective unweighted events: %9.2f" % (binname, h.GetName(), var, s0**2/s02))
         if (s0**2/s02) < minUnweightedEvents and len(reg_xy) > 0:
             #print "     data points for regularization: %d (%d independent x values) " % (len(reg_xy), reg_nx)
             s1, sx, sy, sxx, sxy = 0,0,0,0,0
@@ -524,33 +524,33 @@ class HistoWithNuisances:
                 beta  = 0
             #print "     -> alpha %+8.4f   beta %+8.4f    kappa = exp(alpha) = %6.3f " % (alpha, beta, exp(alpha))
             spu, spd = 0,0
-            for ib in xrange(h.GetNbinsX()):
+            for ib in range(h.GetNbinsX()):
                 y0,yu,yd = h.GetBinContent(ib+1),hup.GetBinContent(ib+1),hdown.GetBinContent(ib+1) 
                 e0,eu,ed = h.GetBinError(ib+1),hup.GetBinError(ib+1),hdown.GetBinError(ib+1) 
                 pu = y0 * exp(alpha + beta*ib*xscale)
                 pd = y0 / exp(alpha + beta*ib*xscale)
                 hup.SetBinContent(ib+1, pu); hdown.SetBinContent(ib+1, pd)
                 if y0 == 0 and yu == 0 and yd == 0: continue
-                if debug: print "     bin %2d    nominal  %7.3f +- %7.3f     up:  %7.3f +- %6.3f -> %7.3f (%+5.2fs)   down: %7.3f +- %6.3f -> %7.3f (%+5.2fs)      dup: %6.3f (%6.3f) -> %6.3f (%6.3f)    ddown: %6.3f (%6.3f) -> %6.3f (%6.3f) " % (
+                if debug: print("     bin %2d    nominal  %7.3f +- %7.3f     up:  %7.3f +- %6.3f -> %7.3f (%+5.2fs)   down: %7.3f +- %6.3f -> %7.3f (%+5.2fs)      dup: %6.3f (%6.3f) -> %6.3f (%6.3f)    ddown: %6.3f (%6.3f) -> %6.3f (%6.3f) " % (
                                 ib+1, y0,e0,  
                                 yu,eu, pu, min(max( (pu-yu)/(max(e0,eu) if e0 else 1e-5),  -9.99),+9.99),
                                 yd,ed, pd, min(max( (pd-yd)/(max(e0,ed) if e0 else 1e-5),  -9.99),+9.99),
                                 (yu-y0),  min(abs(yu/y0 if y0 else 99.999),99.999),  (pu-y0),  min(abs(pu/y0 if y0 else 99.999),99.999),  
-                                (yd-y0),  min(abs(yd/y0 if y0 else 99.999),99.999),  (pd-y0),  min(abs(pd/y0 if y0 else 99.999),99.999))
+                                (yd-y0),  min(abs(yd/y0 if y0 else 99.999),99.999),  (pd-y0),  min(abs(pd/y0 if y0 else 99.999),99.999)))
                 spu += pu; spd += pd
-            if debug: print "         total nominal  %7.3f +- %7.3f     up:  %7.3f +- %6.3f -> %7.3f (%+5.2fs)   down: %7.3f +- %6.3f -> %7.3f (%+5.2fs)      dup: %6.3f (%6.3f) -> %6.3f (%6.3f)    ddown: %6.3f (%6.3f) -> %6.3f (%6.3f) " % (
+            if debug: print("         total nominal  %7.3f +- %7.3f     up:  %7.3f +- %6.3f -> %7.3f (%+5.2fs)   down: %7.3f +- %6.3f -> %7.3f (%+5.2fs)      dup: %6.3f (%6.3f) -> %6.3f (%6.3f)    ddown: %6.3f (%6.3f) -> %6.3f (%6.3f) " % (
                                 s0,sqrt(s02),  
                                 su,sqrt(su2), spu, min(max( (su-spu)/(sqrt(max(s02,su2)) if s02 else 1e-5),  -9.99),+9.99),
                                 sd,sqrt(sd2), spd, min(max( (sd-spd)/(sqrt(max(s02,sd2)) if s02 else 1e-5),  -9.99),+9.99),
                                 (su-s0),  min(abs(su/s0 if s0 else 99.999),99.999),  (spu-s0),  min(abs(spu/s0 if s0 else 99.999),99.999),  
-                                (sd-s0),  min(abs(sd/s0 if s0 else 99.999),99.999),  (spd-s0),  min(abs(spd/s0 if s0 else 99.999),99.999))
-            elif not quiet: print "Info: template %s %s %s effective unweighted events %.2f was regularized. kup = %.2f, kdown = %.2f" % (binname, h.GetName(), var, s0**2/s02, spu/s0 if s0 else 999, spd/s0 if s0 else 999)
+                                (sd-s0),  min(abs(sd/s0 if s0 else 99.999),99.999),  (spd-s0),  min(abs(spd/s0 if s0 else 99.999),99.999)))
+            elif not quiet: print("Info: template %s %s %s effective unweighted events %.2f was regularized. kup = %.2f, kdown = %.2f" % (binname, h.GetName(), var, s0**2/s02, spu/s0 if s0 else 999, spd/s0 if s0 else 999))
 
 
     def rooFitPdfAndNorm(self,roofitContext=None):
         if self._rooFit:
             if roofitContext != None and self._rooFit['context'] != roofitContext:
-                print "I have to regenerate the RooFit setup as it has changed."
+                print("I have to regenerate the RooFit setup as it has changed.")
                 self._rooFit = None
                 self._postFit = None
         if not self._rooFit:
@@ -561,7 +561,7 @@ class HistoWithNuisances:
         return ( self._rooFit["pdf"], self._rooFit["norm"] )
     def setPostFitInfo(self,postFitSetup,applyIt):
         if self._rooFit == None:
-            raise RuntimeError, "Can't setPostFitInfo if you don't have a valid roofit setup"
+            raise RuntimeError("Can't setPostFitInfo if you don't have a valid roofit setup")
         self._postFit = postFitSetup
         if applyIt: self._doPostFit()
         else:       self._doPreFit()
@@ -583,14 +583,14 @@ class HistoWithNuisances:
             roofit.roopdf2hist("_toy", self._rooFit["pdf"], self._rooFit["norm"], target=self.nominal)
         # FIXME this should be improved
         if "TH1" not in self.central.ClassName(): raise RuntimeError("Unsupported for non-TH1")
-        for b in xrange(1,self.central.GetNbinsX()+1):
+        for b in range(1,self.central.GetNbinsX()+1):
             if self.central.GetBinContent(b) == 0: continue
             self.nominal.SetBinError(b, self.nominal.GetBinContent(b) * self.central.GetBinError(b)/self.central.GetBinContent(b))
     def setupRooFit(self,roofitContext):
         if self._rooFit: 
             if self._rooFit["context"] == roofitContext:
                 return
-            print "WARNING, discarding already existing RooFit context"
+            print("WARNING, discarding already existing RooFit context")
         self._rooFit = { "context":roofitContext, "workspace":roofitContext.workspace }
     def _makePdfAndNorm(self):
         self.cropNegativeBins() # can't do with this
@@ -600,14 +600,14 @@ class HistoWithNuisances:
         templates.Add(roofitContext.hist2roofit(self.central))
         norm0 = self.central.Integral()
         normfactor = ROOT.ProcessNormalization("%s_norm" % self.central.GetName(), "", norm0)
-        for var,(hup,hdown) in self.variations.iteritems():
+        for var,(hup,hdown) in self.variations.items():
             nuis = roofitContext.workspace.var(var)
             if not nuis: raise RuntimeError("ERROR: can't find nuisance %s needed to parameterize %s" % var, self.central.GetName())
             if self.isShapeVariation(var):
                 nuisances.add(nuis)
                 templates.Add(roofitContext.hist2roofit(hup))
                 templates.Add(roofitContext.hist2roofit(hdown))
-            if norm0==0: raise RuntimeError, '%s has zero central normalization'%self.central.GetName()
+            if norm0==0: raise RuntimeError('%s has zero central normalization'%self.central.GetName())
             if abs(hup.Integral()/norm0-1)>1e-5 or abs(hdown.Integral()/norm0-1)>1e-5:
                 kup   = min(max(0.1, hup.Integral()/norm0),   10) # sanitze
                 kdown = min(max(0.1, hdown.Integral()/norm0), 10) # sanitze
@@ -631,7 +631,7 @@ class HistoWithNuisances:
         if x.isZero(): return self 
         vars1 = self.variations # writing on self.variations
         vars2 = copy(x.variations)
-        for var in set(vars1.keys()+vars2.keys()):
+        for var in set(list(vars1.keys())+list(vars2.keys())):
             if var not in vars1: 
                 vars1[var] = [_cloneNoDir(self.central),_cloneNoDir(self.central)]
             if var not in vars2: vars2[var] = [x.central,x.central]
@@ -648,10 +648,10 @@ class HistoWithNuisances:
         elif x.central != x.nominal:
             self.nominal = _cloneNoDir(self.central,self.central.GetName())
             adder(self.nominal,x.nominal)
-        for var in set(vars1.keys()+vars2.keys()):
-            for idx in xrange(2): adder(vars1[var][idx],vars2[var][idx])
+        for var in set(list(vars1.keys())+list(vars2.keys())):
+            for idx in range(2): adder(vars1[var][idx],vars2[var][idx])
         if self._rooFit and "pdf" in self._rooFit and x._rooFit:
-            print "Would be good to be able to add roofit objects"
+            print("Would be good to be able to add roofit objects")
         self._dropPdfAndNorm()
         return self
     def __add__(self,x):
@@ -672,7 +672,7 @@ class HistoWithNuisances:
     def projectionX(self,name,iy1,iy2):
         h = HistoWithNuisances(_projectionXNoDir(self.central,name,iy1,iy2))
         h.central.SetDirectory(None)
-        for v,p in self.variations.iteritems():
+        for v,p in self.variations.items():
             h.variations[v] = (_projectionXNoDir(p[0], "%s_%s_up"   % (name,v), iy1,iy2),
                                _projectionXNoDir(p[1], "%s_%s_down" % (name,v), iy1,iy2))
             for hi in h.variations[v]: hi.SetDirectory(None)
@@ -687,7 +687,7 @@ class HistoWithNuisances:
         return h
     def writeToFile(self,tfile,writeVariations=True,takeOwnership=True):
         tfile.WriteTObject(self.nominal, self.nominal.GetName())
-        for key,vals in self.variations.iteritems():
+        for key,vals in self.variations.items():
             tfile.WriteTObject(vals[0], self.GetName()+"_"+key+"Up")
             tfile.WriteTObject(vals[1], self.GetName()+"_"+key+"Down")
         if self.central != self.nominal:
@@ -695,7 +695,7 @@ class HistoWithNuisances:
         if takeOwnership:
             if self.nominal.InheritsFrom("TH1"): 
                 self.nominal.SetDirectory(tfile) 
-                for vals in self.variations.itervalues():
+                for vals in self.variations.values():
                     for v in vals: v.SetDirectory(tfile) 
                 if self.central != self.nominal:
                     self.central.SetDirectory(tfile) 
@@ -769,11 +769,11 @@ class SumWithNuisances(HistoWithNuisances):
     def hasVariations(self):
         return bool(self.variations) 
     def getVariationList(self):
-        return self.variations.keys()
+        return list(self.variations.keys())
     ## HistoWithNuisance API that we implement differently: rootfit 
     def setPostFitInfo(self,postFitSetup,applyIt):
         if self._rooFit == None:
-            raise RuntimeError, "Can't setPostFitInfo if you don't have a valid roofit setup"
+            raise RuntimeError("Can't setPostFitInfo if you don't have a valid roofit setup")
         self._postFit = postFitSetup
         if applyIt: self._doPostFit()
         else:       self._doPreFit()
@@ -825,17 +825,17 @@ class SumWithNuisances(HistoWithNuisances):
         if not self._postFit:
             self._postFit = PostFitSetup(params = self._nuisances)
         toys = self._postFit.postFitToys() if self._usePostFit else self._postFit.preFitToys()
-        nom_bins = [ self.nominal.GetBinContent(b) for b in xrange(1,self.nominal.GetNbinsX()+1) ]
+        nom_bins = [ self.nominal.GetBinContent(b) for b in range(1,self.nominal.GetNbinsX()+1) ]
         sumw2s   = [ 0. for x in nom_bins ]
         wvars    = self._rooFit["workspace"].allVars()
         snap = wvars.snapshot()
         roofit = self._rooFit["context"]
-        for i in xrange(toys.numEntries()):
+        for i in range(toys.numEntries()):
             wvars.assignValueOnly(toys.get(i))
             # calling createHistogram on the RooAddPdf seems to have not understood but bad side-effects.
             # calling it on the individual components and adding them up works, so doing that for now
             hempty.Reset()
-            for isub in xrange(self._norms.getSize()):
+            for isub in range(self._norms.getSize()):
                 spdf  = self._pdfs.at(isub)
                 snorm = self._norms.at(isub)
                 roofit.roopdf2hist("_toy", spdf, snorm, target=hempty, add=True)
@@ -859,7 +859,7 @@ class SumWithNuisances(HistoWithNuisances):
         nominal, sumw2 = norm.getVal(), 0.0
         wvars    = self._rooFit["workspace"].allVars()
         snap = wvars.snapshot()
-        for i in xrange(toys.numEntries()):
+        for i in range(toys.numEntries()):
             wvars.assignValueOnly(toys.get(i))
             sumw2 += (norm.getVal()-nominal)**2
         wvars.assignValueOnly(snap)
@@ -886,7 +886,7 @@ def mergePlots(name,plots):
     return one
 
 def listAllNuisances(histWithNuisanceMap):
-    return set().union(*(h.getVariationList() for (k,h) in histWithNuisanceMap.iteritems() if k != "data" and h.Integral() >= 0))
+    return set().union(*(h.getVariationList() for (k,h) in histWithNuisanceMap.items() if k != "data" and h.Integral() >= 0))
 
 def addMyPOIs(context, histoWithNuisanceMap, mca):
     pois = set()
@@ -896,7 +896,7 @@ def addMyPOIs(context, histoWithNuisanceMap, mca):
         (pdf,norm) = histoWithNuisanceMap[p].rooFitPdfAndNorm()
         if mca.getProcessOption(p,'FreeFloat',False):
             normTermName = mca.getProcessOption(p,'PegNormToProcess',p)
-            print "%s scale as %s" % (p, normTermName)
+            print("%s scale as %s" % (p, normTermName))
             poi = context.factory('r_%s[1,%g,%g]' % (normTermName, 0.0, 5))
             norm.addOtherFactor(poi)
             pois.add('r_%s' % normTermName)
@@ -943,7 +943,7 @@ def addExternalPhysicsModelPOIs(context,histoWithNuisanceMap,mca,processPegs):
 def roofitizeReport(histoWithNuisanceMap, workspace=None, xvarName="x", density=False, context=None):
     # sanity check all inputs, and get one representative histogram
     h0 = None
-    for k,h in histoWithNuisanceMap.iteritems():
+    for k,h in histoWithNuisanceMap.items():
         if k == "data": continue
         if not isinstance(h, HistoWithNuisances):
             raise RuntimeError("element %s (%s, %s) is not a HistoWithNuisances" % (h, h.GetName() if h else "<nil>"))
@@ -971,7 +971,7 @@ def roofitizeReport(histoWithNuisanceMap, workspace=None, xvarName="x", density=
         if not workspace.arg(nuis):
             roofit.factory("%s[0,-7,7]" % nuis)
     # now roofitise all objects
-    for k,h in histoWithNuisanceMap.iteritems():
+    for k,h in histoWithNuisanceMap.items():
         if k != "data": 
             h.setupRooFit(roofit)
     # and return the context

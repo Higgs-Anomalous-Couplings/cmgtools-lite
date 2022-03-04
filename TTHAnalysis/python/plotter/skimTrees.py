@@ -13,30 +13,30 @@ class CheckEventVetoList:
     _store={}
     def __init__(self,fname):
         self.loadFile(fname)
-        print 'Initialized CheckEventVetoList from %s'%fname
+        print('Initialized CheckEventVetoList from %s'%fname)
         self.name = fname.strip().split('/')[-1]
     def loadFile(self,fname):
         with open(fname, 'r') as f:
             for line in f:
                 if len(line.strip()) == 0 or line.strip()[0] == '#': continue
                 run,lumi,evt = line.strip().split(':')
-                self.addEvent(int(run),int(lumi),long(evt))
+                self.addEvent(int(run),int(lumi),int(evt))
     def addEvent(self,run,lumi,evt):
         if (run,lumi) not in self._store:
             self._store[(run,lumi)]=array.array('L')
         self._store[(run,lumi)].append(evt)
     def filter(self,run,lumi,evt):
         mylist=self._store.get((run,lumi),None)
-        return ((not mylist) or (long(evt) not in mylist))
+        return ((not mylist) or (int(evt) not in mylist))
 
 class JSONSelector:
     jsonmap = {}
     def __init__(self,jsonfile):
         self.name = "jsonSelector"
         J = json.load(open(jsonfile, 'r'))
-        for r,l in J.iteritems():
-            self.jsonmap[long(r)] = l
-        print "Loaded JSON %s with %d runs\n" % (jsonfile, len(self.jsonmap))
+        for r,l in J.items():
+            self.jsonmap[int(r)] = l
+        print("Loaded JSON %s with %d runs\n" % (jsonfile, len(self.jsonmap)))
     def filter(self,run,lumi,evt):
         try:
             lumilist = self.jsonmap[run]
@@ -51,7 +51,7 @@ def _runIt(args):
         (tty,mysource,myoutpath,mycut,options,selectors) = args
         mytree = tty.getTree()
         ntot  = mytree.GetEntries() 
-        if not options.justcount: print "  Start  %-40s: %8d" % (tty.cname(), ntot)
+        if not options.justcount: print("  Start  %-40s: %8d" % (tty.cname(), ntot))
         timer = ROOT.TStopwatch(); timer.Start()
         # now we do
         os.system("mkdir -p "+myoutpath)
@@ -74,22 +74,22 @@ def _runIt(args):
             mytree.SetBranchStatus("evt",1)
             mytree.SetBranchStatus("isData",1)
             elistveto = ROOT.TEventList("vetoevents","vetoevents")
-            for ev in xrange(elist.GetN()):
+            for ev in range(elist.GetN()):
                 tev = elist.GetEntry(ev)
                 mytree.GetEntry(tev)
                 if not mytree.isData:
-                    print "You don't want to filter by event number on MC, skipping for this sample"
+                    print("You don't want to filter by event number on MC, skipping for this sample")
                     break
                 for selector in selectors:
                     if not selector.filter(mytree.run,mytree.lumi,mytree.evt):
-                        if not ('json' in selector.name): print 'Selector %s rejected tree entry %d (%d among selected): %d:%d:%d'%(selector.name,tev,ev,mytree.run,mytree.lumi,mytree.evt)
+                        if not ('json' in selector.name): print('Selector %s rejected tree entry %d (%d among selected): %d:%d:%d'%(selector.name,tev,ev,mytree.run,mytree.lumi,mytree.evt))
                         elistveto.Enter(tev)
                         break
             mytree.SetBranchStatus("*",1)
             elist.Subtract(elistveto)
-            print '%d events survived vetoes'%(elist.GetN(),)
+            print('%d events survived vetoes'%(elist.GetN(),))
         if options.justcount:
-            print "  As if it were Done   %-40s: %8d/%8d" % (tty.cname(), elist.GetN(), ntot)
+            print("  As if it were Done   %-40s: %8d/%8d" % (tty.cname(), elist.GetN(), ntot))
             return
 
         # drop and keep branches
@@ -113,7 +113,7 @@ def _runIt(args):
         if histo: histo.Write()
         if histo_w: histo_w.Write()
         fout.Close(); timer.Stop()
-        print "  Done   %-40s: %8d/%8d %8.1f min" % (tty.cname(), npass, ntot, timer.RealTime()/60.)
+        print("  Done   %-40s: %8d/%8d %8.1f min" % (tty.cname(), npass, ntot, timer.RealTime()/60.))
 
 
 if __name__ == "__main__":
@@ -137,7 +137,7 @@ if __name__ == "__main__":
     cut = CutsFile(args[1],options)
     outdir = args[2]
 
-    print "Will write selected trees to "+outdir
+    print("Will write selected trees to "+outdir)
     if not os.path.exists(outdir):
         os.system("mkdir -p "+outdir)
 
@@ -184,9 +184,9 @@ if __name__ == "__main__":
     fname2out  = {}
     fname2tty  = {}
     for proc in mca.listProcesses():
-        print "Process %s" % proc
+        print("Process %s" % proc)
         for tty in mca._allData[proc]:
-            print "\t component %-40s" % tty.cname()
+            print("\t component %-40s" % tty.cname())
             if options.pretend: continue
             myoutpath = outdir+"/"+tty.cname()
             for path in options.path:
@@ -202,12 +202,12 @@ if __name__ == "__main__":
                 fname2cuts[mysource].add(mycut)
             fname2out[mysource] = myoutpath
             fname2tty[mysource] = ttys[0]
-    for fname,cuts in fname2cuts.iteritems():
+    for fname,cuts in fname2cuts.items():
         if len(cuts) > 1: mycut = "(" + (")||(".join(cuts)) + ")"
         else:             mycut = cuts.pop()
         tasks.append((fname2tty[fname],fname,fname2out[fname],mycut,options,selectors))
     if options.jobs == 0: 
-        map(_runIt, tasks)
+        list(map(_runIt, tasks))
     else:
         from multiprocessing import Pool
         Pool(options.jobs).map(_runIt, tasks)
@@ -218,5 +218,5 @@ if __name__ == "__main__":
                 d = D.replace("{P}",P)
                 if not os.path.exists(d): continue
                 os.system("python skimFTrees.py %s %s %s > /dev/null" % (outdir, d, outdir))
-            print "Skimmed %s" % os.path.basename(D)
+            print("Skimmed %s" % os.path.basename(D))
 

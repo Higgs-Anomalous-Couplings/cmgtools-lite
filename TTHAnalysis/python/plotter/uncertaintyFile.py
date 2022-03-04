@@ -5,7 +5,7 @@ import os, os.path
 from array import array
 from copy import *
 
-from CMGTools.TTHAnalysis.plotter.fakeRate import *
+from fakeRate import *
 
 class Uncertainty:
     def __init__(self,name,procmatch,binmatch,unc_type,more_args=None,extra=None,options=None):
@@ -35,10 +35,10 @@ class Uncertainty:
         if self.unc_type=='templateAsymm':
             if 'FakeRates' in self.extra:
                 self._nontrivialSelectionChange = True
-                for idx in xrange(2):
+                for idx in range(2):
                     self.fakerate[idx] = FakeRate(self.extra['FakeRates'][idx],loadFilesNow=False)
             if 'AddWeights' in self.extra:
-                for idx in xrange(2):
+                for idx in range(2):
                     self.fakerate[idx]._weight = '(%s)*(%s)'%(self.fakerate[idx]._weight,self.extra['AddWeights'][idx])
             if 'FakeRates' not in self.extra and 'AddWeights' not in self.extra:
                 raise RuntimeError("templateAsym requires at least one of FakeRates=['fname1'\\,'fname2'] or AddWeights=['expr1'\\,'expr2']")
@@ -57,7 +57,7 @@ class Uncertainty:
                 raise RuntimeError("normAsymm requires two arguments: low and high")
             self.fakerate = [None,None]
             self.trivialFunc = ['apply_norm_up','apply_norm_dn']
-            for idx in xrange(2):
+            for idx in range(2):
                 self.normUnc[idx] = float(self.args[1-idx])
         elif self.unc_type=='normSymm':
             if len(self.args) != 1:
@@ -68,7 +68,7 @@ class Uncertainty:
             self.normUnc[1] = 1.0/self.normUnc[0]
         elif self.unc_type=='none':
             pass
-        else: raise RuntimeError, 'Uncertainty type "%s" not recognised' % self.unc_type
+        else: raise RuntimeError('Uncertainty type "%s" not recognised' % self.unc_type)
         if 'RemoveFakeRate' in self.extra and self.extra['RemoveFakeRate']:
             self._nontrivialSelectionChange = True
             self.removeFR = self.extra['RemoveFakeRate']
@@ -150,7 +150,7 @@ class UncertaintyFile:
         else:
             self._uncertainty = []
             file = open(txtfileOrUncertainty, "r")
-            if not file: raise RuntimeError, "Cannot open "+txtfileOrUncertainty+"\n"
+            if not file: raise RuntimeError("Cannot open "+txtfileOrUncertainty+"\n")
             aliases={}
             for line in file:
               try:
@@ -196,8 +196,8 @@ class UncertaintyFile:
                 more_args = field[4:]
                 self._uncertainty.append(Uncertainty(name,procmatch,binmatch,unc_type,more_args,extra))
 
-              except ValueError, e:
-                print "Error parsing cut line [%s]" % line.strip()
+              except ValueError as e:
+                print(("Error parsing cut line [%s]" % line.strip()))
                 raise 
     def __str__(self):
         newstring = ""
@@ -207,5 +207,5 @@ class UncertaintyFile:
     def uncertainty(self):
         return self._uncertainty[:]
     def add(self,uncertainty):
-        if uncertainty.name in [u.name for u in self._uncertainty]: raise RuntimeError, 'Uncertainty with name %s is already present' % uncertainty.name
+        if uncertainty.name in [u.name for u in self._uncertainty]: raise RuntimeError('Uncertainty with name %s is already present' % uncertainty.name)
         self._uncertainty.append(uncertainty)

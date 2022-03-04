@@ -50,7 +50,7 @@ if __name__ == "__main__":
                 if not h: continue
                 if p in plots:
                     if options.addErrorsLinearlyForTotal and p=='total':
-                        for b in xrange(1, plots[p].GetNbinsX()+1):
+                        for b in range(1, plots[p].GetNbinsX()+1):
                             plots[p].SetBinContent(b, plots[p].GetBinContent(b)+h.GetBinContent(b))
                             plots[p].SetBinError(b, plots[p].GetBinError(b)+h.GetBinError(b))
                     else:
@@ -79,7 +79,7 @@ if __name__ == "__main__":
                 if mca.getProcessOption(p,'NormSystematic',0.0) > 0:
                     syst = mca.getProcessOption(p,'NormSystematic',0.0)
                     if "TH1" in h.ClassName():
-                        for b in xrange(1,h.GetNbinsX()+1):
+                        for b in range(1,h.GetNbinsX()+1):
                             totSyst.SetBinError(b, hypot(totSyst.GetBinError(b), syst*h.GetBinContent(b)))
         tot.GetYaxis().SetRangeUser(0, 1.0*pspec.getOption('MoreY',2.0)*max(tot.GetMaximum(), data.GetMaximum()))
         ## Prepare split screen

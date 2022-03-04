@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from CMGTools.TTHAnalysis.plotter.mcAnalysis import *
-from CMGTools.TTHAnalysis.plotter.histoWithNuisances import _cloneNoDir
+from mcAnalysis import *
+from histoWithNuisances import _cloneNoDir
 import re, sys, os, os.path
 systs = {}
 
@@ -21,7 +21,7 @@ options.weight = True
 options.final  = True
 
 if "/functions_cc.so" not in ROOT.gSystem.GetLibraries(): 
-    ROOT.gROOT.ProcessLine(".L %s/src/CMGTools/TTHAnalysis/python/plotter/functions.cc+" % os.environ['CMSSW_BASE']);
+    ROOT.gROOT.ProcessLine(".L functions.cc+");
 
 mca  = MCAnalysis(args[0],options)
 cuts = CutsFile(args[1],options)
@@ -44,11 +44,11 @@ else:
        report = mca.getPlotsRaw("x", cexpr+":"+args[2], makeBinningProductString(args[3],cbins), cuts.allCuts(), nodata=options.asimov) 
     else:
        report = mca.getPlotsRaw("x", args[2], args[3], cuts.allCuts(), nodata=options.asimov) 
-    for p,h in report.iteritems(): h.cropNegativeBins()
+    for p,h in report.items(): h.cropNegativeBins()
 
 if options.savefile:
     savefile = ROOT.TFile(outdir+binname+".bare.root","recreate")
-    for k,h in report.iteritems(): 
+    for k,h in report.items(): 
         h.writeToFile(savefile, takeOwnership=False)
     savefile.Close()
 
@@ -73,23 +73,23 @@ if options.categ:
     catlabels = options.categ[2].split(",")
     if len(catlabels) != report["data_obs"].GetNbinsY(): raise RuntimeError("Mismatch between category labels and bins")
     for ic,lab in enumerate(catlabels):
-        allreports["%s_%s"%(binname,lab)] = dict( (k, h.projectionX("x_"+k,ic+1,ic+1)) for (k,h) in report.iteritems() )
+        allreports["%s_%s"%(binname,lab)] = dict( (k, h.projectionX("x_"+k,ic+1,ic+1)) for (k,h) in report.items() )
 else:
     allreports = {binname:report}
 
 
-for binname, report in allreports.iteritems():
+for binname, report in allreports.items():
   if options.bbb:
     if options.autoMCStats: raise RuntimeError("Can't use --bbb together with --amc/--autoMCStats")
-    for p,h in report.iteritems(): 
+    for p,h in report.items(): 
       if p not in ("data", "data_obs"):
         h.addBinByBin(namePattern="%s_%s_%s_bin{bin}" % (options.bbb, binname, p), conservativePruning = True)
-  for p,h in report.iteritems():
-    for b in xrange(1,h.GetNbinsX()+1):
+  for p,h in report.items():
+    for b in range(1,h.GetNbinsX()+1):
       h.SetBinError(b,min(h.GetBinContent(b),h.GetBinError(b))) # crop all uncertainties to 100% to avoid negative variations
   nuisances = sorted(listAllNuisances(report))
 
-  allyields = dict([(p,h.Integral()) for p,h in report.iteritems()])
+  allyields = dict([(p,h.Integral()) for p,h in report.items()])
   procs = []; iproc = {}
   for i,s in enumerate(mca.listSignals()):
     if s not in allyields: continue
@@ -120,10 +120,10 @@ for binname, report in allreports.iteritems():
             for hv,d in zip(variants, ('up','down')):
                 k = hv.Integral()/n0
                 if k == 0: 
-                    print "Warning: underflow template for %s %s %s %s. Will take the nominal scaled down by a factor 2" % (binname, p, name, d)
+                    print("Warning: underflow template for %s %s %s %s. Will take the nominal scaled down by a factor 2" % (binname, p, name, d))
                     hv.Add(h.raw()); hv.Scale(0.5)
                 elif k < 0.2 or k > 5:
-                    print "Warning: big shift in template for %s %s %s %s: kappa = %g " % (binname, p, name, d, k)
+                    print("Warning: big shift in template for %s %s %s %s: kappa = %g " % (binname, p, name, d, k))
             effshape[p] = variants 
     if isShape:
         if options.regularize: 
@@ -133,7 +133,7 @@ for binname, report in allreports.iteritems():
     else:
         effyield = dict((p,"-") for p in procs)
         isNorm = False
-        for p,(hup,hdn) in effshape.iteritems():
+        for p,(hup,hdn) in effshape.items():
             i0 = allyields[p]
             kup, kdn = hup.Integral()/i0, hdn.Integral()/i0
             if abs(kup*kdn-1)<1e-5:
@@ -161,7 +161,7 @@ for binname, report in allreports.iteritems():
   klen = max([7, len(binname)]+[len(p) for p in procs])
   kpatt = " %%%ds "  % klen
   fpatt = " %%%d.%df " % (klen,3)
-  npatt = "%%-%ds " % max([len('process')]+map(len,nuisances))
+  npatt = "%%-%ds " % max([len('process')]+list(map(len,nuisances)))
   datacard.write('##----------------------------------\n')
   datacard.write((npatt % 'bin    ')+(" "*6)+(" ".join([kpatt % binname  for p in procs]))+"\n")
   datacard.write((npatt % 'process')+(" "*6)+(" ".join([kpatt % p        for p in procs]))+"\n")
@@ -172,7 +172,7 @@ for binname, report in allreports.iteritems():
   for name in nuisances:
     (kind,effmap,effshape) = systs[name]
     datacard.write(('%s %5s' % (npatt % name,kind)) + " ".join([kpatt % effmap[p]  for p in procs]) +"\n")
-    for p,(hup,hdn) in effshape.iteritems():
+    for p,(hup,hdn) in effshape.items():
         towrite.append(hup.Clone("x_%s_%sUp"   % (p,name)))
         towrite.append(hdn.Clone("x_%s_%sDown" % (p,name)))
   if options.autoMCStats: 
@@ -183,5 +183,5 @@ for binname, report in allreports.iteritems():
       workspace.WriteTObject(h,h.GetName())
   workspace.Close()
 
-  print "Wrote to {0}.card.txt and {0}.input.root ".format(outdir+binname)
+  print("Wrote to {0}.card.txt and {0}.input.root ".format(outdir+binname))
 

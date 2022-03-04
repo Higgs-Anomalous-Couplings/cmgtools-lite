@@ -54,7 +54,7 @@ if __name__ == "__main__":
         if not os.path.exists(outdir):
             os.system("mkdir -p "+outdir)
 
-        print "Will write selected trees to "+remdir
+        print("Will write selected trees to "+remdir)
         if not os.path.exists(remdir):
             os.system("mkdir -p "+remdir)
 
@@ -70,7 +70,7 @@ if __name__ == "__main__":
         #h = f.CountSMS
         #hw = f.SumGenWeightsSMS
 
-        if hasAll: print 'Total events: %d originally, %d after production skim'%(int(h.Integral()),t.GetEntries())
+        if hasAll: print('Total events: %d originally, %d after production skim'%(int(h.Integral()),t.GetEntries()))
 
         t.SetBranchStatus('*',0)
         ## split using GenPart info
@@ -78,8 +78,8 @@ if __name__ == "__main__":
             t.SetBranchStatus('nGenPart',1)
             t.SetBranchStatus('GenPart_pdgId',1)
             t.SetBranchStatus('GenPart_mass' ,1)
-            for nev in xrange(t.GetEntries()):
-                if nev%1000==0: print 'Gen-Scanning event %d'%nev
+            for nev in range(t.GetEntries()):
+                if nev%1000==0: print('Gen-Scanning event %d'%nev)
                 t.GetEntry(nev)
                 mass1 = 0
                 mass2 = 0
@@ -101,8 +101,8 @@ if __name__ == "__main__":
         else:
             t.SetBranchStatus('GenSusyMScan1',1)
             t.SetBranchStatus('GenSusyMScan2',1)
-            for nev in xrange(t.GetEntries()):
-                if nev%1000==0: print 'Scanning event %d'%nev
+            for nev in range(t.GetEntries()):
+                if nev%1000==0: print('Scanning event %d'%nev)
                 t.GetEntry(nev)
                 if options.mass > 0 and t.GenSusyMScan1 != options.mass: continue
                 m = (t.GenSusyMScan1,t.GenSusyMScan2)
@@ -111,17 +111,17 @@ if __name__ == "__main__":
                     allmasses[m] = ROOT.TEventList(mname,mname)
                 allmasses[m].Enter(nev)
 
-        for m in sorted(allmasses.keys()): print '(%d,%d): %d events'%(m[0],m[1],allmasses[m].GetN())
+        for m in sorted(allmasses.keys()): print('(%d,%d): %d events'%(m[0],m[1],allmasses[m].GetN()))
 
         t.SetBranchStatus("*",1)
         for drop in options.drop: t.SetBranchStatus(drop,0)
         for keep in options.keep: t.SetBranchStatus(keep,1)
 
-        for m,elist in allmasses.iteritems():
+        for m,elist in allmasses.items():
             splitdir = '%s/SMS_%d_%d_%s_Chunk%d'%(outdir,m[0],m[1],dset,random.randint(1e5,1e10))
             os.system("mkdir -p "+splitdir)
             os.system("mkdir -p %s/%s"%(splitdir,treename))
-            if os.path.exists('%s/%s/%s/tree.root'%(remdir,splitdir.split('/')[-1],treename)): raise RuntimeError, 'Output file already exists'
+            if os.path.exists('%s/%s/%s/tree.root'%(remdir,splitdir.split('/')[-1],treename)): raise RuntimeError('Output file already exists')
             fout = ROOT.TFile('%s/%s/tree.root'%(splitdir,treename),'recreate')
             fout.cd()
             t.SetEventList(elist)

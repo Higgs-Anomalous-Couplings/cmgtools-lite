@@ -106,7 +106,7 @@ class CanvasPrinter(Module):
         for t in self._fileTemplate:
             fname = string.Formatter().vformat(t,[],event)
             self._canvasMaker.canvas().Print(fname)
-            print fname
+            print(fname)
 
 class LeptonMatchDrawer(AbsCollectionDrawer):
     def __init__(self,name,label,markerStyle=20,markerColors={0:99,1:1,2:4},markerSize=2,cut=None,maxItems=99):
@@ -139,7 +139,7 @@ ROOT.gROOT.ProcessLine(".x functions.cc+");
 t = f.Get("ttHLepTreeProducerBase")
 #t.AddFriend("newMC/t","/data/gpetrucc/8TeV/ttH/TREES_030113_CRIS_HADD/0_leptonMC_v1/lepMCFriend_TTJets.root")
 #t.AddFriend("newMC/t","/afs/cern.ch/user/g/gpetrucc/ttH/CMGTools/CMSSW_5_3_5/src/CMGTools/TTHAnalysis/macros/leptons/0_leptonMC_v2_030113/lepMCFriend_TTJets.root")
-print "Reading %s (%d entries)" % (argv[1], t.GetEntries())
+print("Reading %s (%d entries)" % (argv[1], t.GetEntries()))
 
 cMaker   = CanvasMaker("cm",maxEvents=40)
 cPrinter = CanvasPrinter("cp",cMaker,[ "/afs/cern.ch/user/g/gpetrucc/public_html/drop/plots/ttH/sparks/v3/3l/r{run}_ls{lumi}_ev{evt}.png" ])

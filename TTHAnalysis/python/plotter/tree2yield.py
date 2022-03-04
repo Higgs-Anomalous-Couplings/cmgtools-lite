@@ -16,14 +16,14 @@ ROOT.gSystem.Load("libpng") # otherwise we may end up with a bogus version
 
 from copy import copy,deepcopy
 
-from CMGTools.TTHAnalysis.plotter.cutsFile import *
-from CMGTools.TTHAnalysis.plotter.mcCorrections import *
-from CMGTools.TTHAnalysis.plotter.fakeRate import *
-from CMGTools.TTHAnalysis.plotter.uncertaintyFile import *
-from CMGTools.TTHAnalysis.plotter.histoWithNuisances import HistoWithNuisances, cropNegativeBins
+from cutsFile import *
+from mcCorrections import *
+from fakeRate import *
+from uncertaintyFile import *
+from histoWithNuisances import HistoWithNuisances, cropNegativeBins
 
 if "/functions_cc.so" not in ROOT.gSystem.GetLibraries(): 
-    ROOT.gROOT.ProcessLine(".L %s/src/CMGTools/TTHAnalysis/python/plotter/functions.cc+" % os.environ['CMSSW_BASE']);
+    ROOT.gROOT.ProcessLine(".L functions.cc+");
 
 def scalarToVector(x):
     x0 = x
@@ -47,7 +47,7 @@ class PlotSpec:
     def setLog(self,name,value):
         self.logs[name] = value
     def allLogs(self):
-        return self.logs.iteritems()
+        return iter(self.logs.items())
 
 def stylePlot(plot,spec,getOption):
         ## Sample specific-options, from self
@@ -72,13 +72,13 @@ def stylePlot(plot,spec,getOption):
 def makeBinningProductString(xbins,ybins):
     if xbins[0] == "[":
         if ybins[0] != "[":
-            (nbins,ymin,ymax) = map(float, ybins.split(','))
-            ybins = "[" + ",".join(map(str, [ymin+i*(ymax-ymin)/nbins for i in xrange(0,int(nbins+1))])) + "]"
+            (nbins,ymin,ymax) = list(map(float, ybins.split(',')))
+            ybins = "[" + ",".join(map(str, [ymin+i*(ymax-ymin)/nbins for i in range(0,int(nbins+1))])) + "]"
         return xbins+"*"+ybins
     elif ybins[0] == "[":
         if xbins[0] != "[":
-            (nbins,xmin,xmax) = map(float, xbins.split(','))
-            xbins = "[" + ",".join(map(str, [xmin+i*(xmax-xmin)/nbins for i in xrange(0,int(nbins+1))])) + "]"
+            (nbins,xmin,xmax) = list(map(float, xbins.split(',')))
+            xbins = "[" + ",".join(map(str, [xmin+i*(xmax-xmin)/nbins for i in range(0,int(nbins+1))])) + "]"
         return xbins+"*"+ybins
     else:
         return xbins+","+ybins
@@ -130,7 +130,7 @@ def makeHistFromBinsAndSpec(name,expr,bins,plotspec):
             histo.GetYaxis().SetTitle(ey)
             histo.GetZaxis().SetTitle(ez)
         else:
-            raise RuntimeError, "Can't make a plot with %d dimensions" % nvars
+            raise RuntimeError("Can't make a plot with %d dimensions" % nvars)
         histo.Sumw2()
         return histo
 
@@ -205,7 +205,7 @@ class TreeToYield:
         if not getattr(self, '_ttyVariations'):
             self.makeTTYVariations()
         ttys = []
-        for (var,direction),tty in self._ttyVariations.iteritems():
+        for (var,direction),tty in self._ttyVariations.items():
             ttys.append((var,direction,tty))
         return ttys
     def makeTTYVariations(self):
@@ -226,7 +226,7 @@ class TreeToYield:
                             continue
                         tty2._FRSourceList.append((fname,FR))
                     if not found: 
-                        raise RuntimeError, "Variation %s%s for %s %s would want to remove a FR %s which is not found" % (var.name,direction,self._name,self._cname,var.getFRToRemove())
+                        raise RuntimeError("Variation %s%s for %s %s would want to remove a FR %s which is not found" % (var.name,direction,self._name,self._cname,var.getFRToRemove()))
                     tty2._makeMCCAndScaleFactor()
                 tty2.applyFR(var.getFR(direction))
                 tty2._maintty = self
@@ -299,9 +299,9 @@ class TreeToYield:
             #self._tfile = ROOT.TFile.Open(self._fname+"?readaheadsz=0") #worse than 65k
         else:
             self._tfile = ROOT.TFile.Open(self._fname)
-        if not self._tfile: raise RuntimeError, "Cannot open %s\n" % self._fname
+        if not self._tfile: raise RuntimeError("Cannot open %s\n" % self._fname)
         t = self._tfile.Get(self._objname)
-        if not t: raise RuntimeError, "Cannot find tree %s in file %s\n" % (self._objname, self._fname)
+        if not t: raise RuntimeError("Cannot find tree %s in file %s\n" % (self._objname, self._fname))
         self._tree  = t
         #self._tree.SetCacheSize(10*1000*1000)
         if "root://" in self._fname: self._tree.SetCacheSize()
@@ -333,24 +333,24 @@ class TreeToYield:
             return self._tree
         else:
             t = self._tfile.Get(treeName)
-            if not t: raise RuntimeError, "Cannot find tree %s in file %s\n" % (treeName, self._fname)
+            if not t: raise RuntimeError("Cannot find tree %s in file %s\n" % (treeName, self._fname))
             return t
     def getSumW(self,expr="genEventSumw",closeFileAfterwards=True):
-        if self._maintty != None: print "WARNING: getSumW called on a non-main TTY"
+        if self._maintty != None: print("WARNING: getSumW called on a non-main TTY")
         if expr not in self._sumweights:
             if self._isNano:
                 if closeFileAfterwards and (not self._isInit):
                     if "root://" in self._fname: ROOT.gEnv.SetValue("XNet.Debug", -1); # suppress output about opening connections
                     tfile = ROOT.TFile.Open(self._fname)
-                    if not tfile: raise RuntimeError, "Cannot open %s\n" % self._fname
+                    if not tfile: raise RuntimeError("Cannot open %s\n" % self._fname)
                     t = tfile.Get("Runs")
-                    if not t: raise RuntimeError, "Cannot find tree %s in file %s\n" % ("LuminosityBlocks", self._fname)
+                    if not t: raise RuntimeError("Cannot find tree %s in file %s\n" % ("LuminosityBlocks", self._fname))
                     self._sumweights[expr] = _treeSum(t, expr)
                     tfile.Close()
                 else:
                     self._sumweights[expr] = _treeSum(self.getTree("Runs"), expr)
             else:
-                raise RuntimeError, "getSumW implemented only for NanoAOD for now"
+                raise RuntimeError("getSumW implemented only for NanoAOD for now")
         return self._sumweights[expr]
     def getEntries(self,useEList=True,closeFileAfterwards=True):
         if useEList and self._elist: 
@@ -362,9 +362,9 @@ class TreeToYield:
             if closeFileAfterwards and (not self._isInit):
                 if "root://" in self._fname: ROOT.gEnv.SetValue("XNet.Debug", -1); # suppress output about opening connections
                 tfile = ROOT.TFile.Open(self._fname)
-                if not tfile: raise RuntimeError, "Cannot open %s\n" % self._fname
+                if not tfile: raise RuntimeError("Cannot open %s\n" % self._fname)
                 t = tfile.Get(self._objname)
-                if not t: raise RuntimeError, "Cannot find tree %s in file %s\n" % (self._objname, self._fname)
+                if not t: raise RuntimeError("Cannot find tree %s in file %s\n" % (self._objname, self._fname))
                 self._entries = t.GetEntries()
             else:
                 self._entries = self.getTree().GetEntries()
@@ -415,18 +415,18 @@ class TreeToYield:
         nfmtS = "    %8.3f" if self._weight else nfmtL
 
         if self._options.errors:
-            nfmtS+=u"%8.3f"
-            nfmtL+=u"%8.3f"
+            nfmtS+="%8.3f"
+            nfmtL+="%8.3f"
             fmtlen+=8
         if self._options.fractions:
             nfmtS+="%7.1f%%"
             nfmtL+="%7.1f%%"
             fmtlen+=8
 
-        print "cut".center(clen),"yield".center(fmtlen)
-        print "-"*((fmtlen+1)+clen)
+        print("cut".center(clen),"yield".center(fmtlen))
+        print("-"*((fmtlen+1)+clen))
         for i,(cut,(nev,err)) in enumerate(report):
-            print cfmt % cut,
+            print(cfmt % cut, end=' ')
             den = report[i-1][1][0] if i>0 else 0
             fraction = nev/float(den) if den > 0 else 1
             if self._options.nMinusOne or self._options.nMinusOneInverted: 
@@ -434,9 +434,9 @@ class TreeToYield:
             toPrint = (nev,)
             if self._options.errors:    toPrint+=(err,)
             if self._options.fractions: toPrint+=(fraction*100,)
-            if self._weight and nev < 1000: print nfmtS % toPrint,
-            else                          : print nfmtL % toPrint,
-            print ""
+            if self._weight and nev < 1000: print(nfmtS % toPrint, end=' ')
+            else                          : print(nfmtL % toPrint, end=' ')
+            print("")
     def _getCut(self,cut,noweight=False):
         if self._weight and not noweight:
             if self._isdata: cut = "(%s)     *(%s)*(%s)" % (self._weightString,                    self._scaleFactor, self.adaptExpr(cut,cut=True))
@@ -479,7 +479,7 @@ class TreeToYield:
                     tty2._isInit = True; tty2._tree = self.getTree()
                     variations[var.name][isign] = tty2.getPlot(plotspec,cut,fsplit=fsplit,closeTreeAfter=False,noUncertainties=True)
                     tty2._isInit = False; tty2._tree = None
-            for (var,up,down) in variations.itervalues():
+            for (var,up,down) in variations.values():
                 if up   == None: up   = var.getTrivial("up",  [nominal,None,None])
                 if down == None: down = var.getTrivial("down",[nominal,up,  None])
                 var.postProcess(nominal, up, down)
@@ -515,7 +515,7 @@ class TreeToYield:
                 while n % rebin != 0: rebin -= 1
                 if rebin != 1: ret.Rebin(rebin)
             if plotspec.getOption('Density',False):
-                for b in xrange(1,n+1):
+                for b in range(1,n+1):
                     ret.SetBinContent( b, ret.GetBinContent(b) / ret.GetXaxis().GetBinWidth(b) )
                     ret.SetBinError(   b, ret.GetBinError(b) / ret.GetXaxis().GetBinWidth(b) )
         self._stylePlot(ret,plotspec)
@@ -536,7 +536,7 @@ class TreeToYield:
         if not self._isInit: self._init()
         if self._appliedCut != None:
             if cut != self._appliedCut: 
-                print "WARNING, for %s:%s, cut was set to '%s' but now plotting with cut '%s'." % (self._name, self._cname, self._appliedCut, cut)
+                print("WARNING, for %s:%s, cut was set to '%s' but now plotting with cut '%s'." % (self._name, self._cname, self._appliedCut, cut))
                 #self.clearCut()
             else:
                 #print "INFO, for %s:%s, cut was already set to '%s', will use elist for plotting (%d entries)" % (self._name, self._cname, cut, self._elist.GetN())
@@ -565,7 +565,7 @@ class TreeToYield:
         if canKeys and histo.GetEntries() > 0 and histo.GetEntries() < self.getOption('KeysPdfMinN',2000) and not self._isdata and self.getOption("KeysPdf",False):
             #print "Histogram for %s/%s has %d entries, so will use KeysPdf " % (self._cname, self._name, histo.GetEntries())
             if "/TH1Keys_cc.so" not in ROOT.gSystem.GetLibraries(): 
-                ROOT.gROOT.ProcessLine(".L %s/src/CMGTools/TTHAnalysis/python/plotter/TH1Keys.cc+" % os.environ['CMSSW_BASE']);
+                ROOT.gROOT.ProcessLine(".L TH1Keys.cc+")
             (nb,xmin,xmax) = bins.split(",")
             histo = ROOT.TH1KeysNew("dummyk","dummyk",int(nb),float(xmin),float(xmax),"a",1.0)
             self._tree.Draw("%s>>%s" % (expr,"dummyk"), cut, "goff", maxEntries, firstEntry)
@@ -603,7 +603,7 @@ class TreeToYield:
         eventLoop.endComponent(self)
     def applyCutAndElist(self,cut,elist):
         if self._appliedCut != None and self._appliedCut != cut: 
-            print "WARNING: changing applied cut from %s to %s\n" % (self._appliedCut, cut)
+            print("WARNING: changing applied cut from %s to %s\n" % (self._appliedCut, cut))
         self._appliedCut = cut
         self._elist = elist
     def cutAndElist(self):

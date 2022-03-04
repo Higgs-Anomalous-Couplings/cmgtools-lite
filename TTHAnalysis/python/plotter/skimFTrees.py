@@ -11,7 +11,7 @@ dsets = [d for d in dsets if d in os.listdir(sys.argv[1])]
 fname = [x for x in sys.argv[2].split('/') if x!=''][-1]
 
 for dset in dsets:
-    print dset,
+    print(dset, end=' ')
     fsel = ROOT.TFile.Open(sys.argv[1]+'/'+dset+'/selection_eventlist.root')
     elist = fsel.elist
     f_f = ROOT.TFile.Open(sys.argv[2]+'/evVarFriend_'+dset+'.root')
@@ -24,7 +24,7 @@ for dset in dsets:
     f2.cd('sf')
     t2 = t_f.CopyTree('1')
     f2.Write()
-    print ': skimmed friend trees put in %s'%f2.GetName()
+    print(': skimmed friend trees put in %s'%f2.GetName())
     f2.Close()
     f_f.Close()
     fsel.Close()

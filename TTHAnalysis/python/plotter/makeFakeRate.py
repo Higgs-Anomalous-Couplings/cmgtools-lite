@@ -13,9 +13,9 @@ def H1DToH2D(h1d,h2d,func):
     ax = h2d.GetXaxis()
     ay = h2d.GetYaxis()
     a1 = h1d.GetXaxis()
-    for bx in xrange(1,h2d.GetNbinsX()+1):
+    for bx in range(1,h2d.GetNbinsX()+1):
        x = ax.GetBinCenter(bx) 
-       for by in xrange(1,h2d.GetNbinsY()+1):
+       for by in range(1,h2d.GetNbinsY()+1):
            y = ay.GetBinCenter(by) 
            ib = a1.FindBin(func(x,y))
            h2d.SetBinContent(bx, by, h1d.GetBinContent(ib))
@@ -45,7 +45,7 @@ class MCFakeRate:
                     text = "    Fake rate vs %s\n" % (p.name)
                     text += "%3s   %8s  %8s    %6s +/- %6s\n" % ("bin", "xmin ", "xmax ", "value", "error ")
                     text += "%3s   %8s  %8s    %6s-----%6s\n" % ("---", "------", "------", "------", "------")
-                    for b in xrange(1,h[0].GetNbinsX()+1):
+                    for b in range(1,h[0].GetNbinsX()+1):
                         n,d = h[0].GetBinContent(b), h[1].GetBinContent(b)
                         f = n/float(d) if d > 0 else 0; 
                         wavg = (h[0].GetBinError(b)**2) /h[0].GetBinError(b) if h[0].GetBinError(b) else 1
@@ -105,7 +105,7 @@ class FakeRateSimple:
                     text = "    Fake rate vs %s for %s\n" % (p.name,l)
                     text += "%3s   %8s  %8s    %6s +/- %6s\n" % ("bin", "xmin ", "xmax ", "value", "error ")
                     text += "%3s   %8s  %8s    %6s-----%6s\n" % ("---", "------", "------", "------", "------")
-                    for b in xrange(1,h[0].GetNbinsX()+1):
+                    for b in range(1,h[0].GetNbinsX()+1):
                         n,d = h[0].GetBinContent(b), h[1].GetBinContent(b)
                         f = n/float(d) if d > 0 else 0; 
                         if l == "data":
@@ -147,8 +147,8 @@ class FakeRateSimple:
                     text = "    Fake rate vs %s for %s; xvar = %s, yvar = %s\n" % (p.name,l, p.getOption('XTitle','x'), p.getOption('YTitle','x'))
                     text += "%3s %3s   %8s  %8s   %8s  %8s    %6s +/- %6s\n" % ("bx", "by", "xmin ", "xmax ", "ymin ", "ymax ", "value", "error ")
                     text += "%3s %3s   %8s  %8s   %8s  %8s    %6s-----%6s\n" % ("---","---",  "------", "------", "------", "------", "------", "------")
-                    for bx in xrange(1,h[0].GetNbinsX()+1):
-                      for by in xrange(1,h[0].GetNbinsX()+1):
+                    for bx in range(1,h[0].GetNbinsX()+1):
+                      for by in range(1,h[0].GetNbinsX()+1):
                         n,d = h[0].GetBinContent(bx,by), h[1].GetBinContent(bx,by)
                         f = n/float(d) if d > 0 else 0; 
                         if l == "data":
@@ -179,7 +179,7 @@ class FakeRateSimple:
                             c1.Print("%s/FR_%s_%s.%s" % (self._denDir, p.name, l, ext))
                     h[0].SetName("FR_%s_%s" % (p.name,l)); self._outfile.WriteTObject(h[0]);
             else:
-                raise RuntimeError, "No idea how to handle a " + data[0].ClassName()
+                raise RuntimeError("No idea how to handle a " + data[0].ClassName())
 
 class FakeRateMET1Bin:
     def __init__(self,plotFileName, denDir, numDir, options):
@@ -192,7 +192,7 @@ class FakeRateMET1Bin:
         self._options = options
     def integral(self,h,xmin,xmax):
         n, n2 = 0, 0
-        for b in xrange(1,h.GetNbinsX()+1):
+        for b in range(1,h.GetNbinsX()+1):
             if (h.GetXaxis().GetBinCenter(b) > xmin and h.GetXaxis().GetBinCenter(b) < xmax):
                 n  += h.GetBinContent(b)
                 n2 += h.GetBinError(b)**2
@@ -254,7 +254,7 @@ class FakeRateMET1Bin:
                     text = "    Fake rate vs %s for %s\n" % (p.name,l)
                     text += "%3s   %8s  %8s    %6s +/- %6s\n" % ("bin", "xmin ", "xmax ", "value", "error ")
                     text += "%3s   %8s  %8s    %6s-----%6s\n" % ("---", "------", "------", "------", "------")
-                    for b in xrange(1,h[0].GetNbinsX()+1):
+                    for b in range(1,h[0].GetNbinsX()+1):
                         n,d = h[0].GetBinContent(b), h[1].GetBinContent(b)
                         f = n/float(d) if d > 0 else 0; 
                         if l == "data":
@@ -299,8 +299,8 @@ class FakeRateMET1Bin:
                     text = "    Fake rate vs %s for %s; xvar = %s, yvar = %s\n" % (p.name,l, p.getOption('XTitle','x'), p.getOption('YTitle','x'))
                     text += "%3s %3s   %8s  %8s   %8s  %8s    %6s +/- %6s\n" % ("bx", "by", "xmin ", "xmax ", "ymin ", "ymax ", "value", "error ")
                     text += "%3s %3s   %8s  %8s   %8s  %8s    %6s-----%6s\n" % ("---","---",  "------", "------", "------", "------", "------", "------")
-                    for bx in xrange(1,h[0].GetNbinsX()+1):
-                      for by in xrange(1,h[0].GetNbinsX()+1):
+                    for bx in range(1,h[0].GetNbinsX()+1):
+                      for by in range(1,h[0].GetNbinsX()+1):
                         n,d = h[0].GetBinContent(bx,by), h[1].GetBinContent(bx,by)
                         f = n/float(d) if d > 0 else 0; 
                         if l == "data":
@@ -330,7 +330,7 @@ class FakeRateMET1Bin:
                         else:
                             c1.Print("%s/FR_%s_%s.%s" % (self._denDir, p.name, l, ext))
             else:
-                raise RuntimeError, "No idea how to handle a " + data[0].ClassName()
+                raise RuntimeError("No idea how to handle a " + data[0].ClassName())
 
 class FakeRateMET1D(FakeRateMET1Bin):
     def __init__(self, plotFileName, denDir, numDir, options):
@@ -340,7 +340,7 @@ class FakeRateMET1D(FakeRateMET1Bin):
             for h2di,h1di in zip(h2d,h1d):
                 self.fill1DY(h2di,h1di,ix)
         else:
-            for iy in xrange(1,h2d.GetNbinsY()+1):
+            for iy in range(1,h2d.GetNbinsY()+1):
                 h1d.SetBinContent(iy, h2d.GetBinContent(ix,iy))
                 h1d.SetBinError(iy, h2d.GetBinError(ix,iy))
     def fill1DX(self,h2d,h1d,iy):
@@ -348,13 +348,13 @@ class FakeRateMET1D(FakeRateMET1Bin):
             for h2di,h1di in zip(h2d,h1d):
                 self.fill1DX(h2di,h1di,iy)
         else:
-            for ix in xrange(1,h2d.GetNbinsX()+1):
+            for ix in range(1,h2d.GetNbinsX()+1):
                 h1d.SetBinContent(ix, h2d.GetBinContent(ix,iy))
                 h1d.SetBinError(ix, h2d.GetBinError(ix,iy))
     def makePlotsBySource(self,mca,xname="met"):
         for p in self._plots.plots():
             if not p.name.endswith("_"+xname): continue
-            print p.name
+            print(p.name)
             asig = mca.listSignals()[0]
             abkg = mca.listBackgrounds()[0]
             data = [self._numFile.Get(p.name + "_data").Clone("dnum"), self._denFile.Get(p.name + "_data").Clone("dden")]
@@ -383,7 +383,7 @@ class FakeRateMET1D(FakeRateMET1Bin):
             dcorrx = [ h.Clone("_corr") for h in datax ]
             # step 0: make uncorrected FR
             for l,h in ('data',datax),('qcd',sigx),('ewk',bkgx):
-                for b in xrange(1,h[0].GetNbinsX()+1):
+                for b in range(1,h[0].GetNbinsX()+1):
                     n,d = h[0].GetBinContent(b), h[1].GetBinContent(b)
                     f = n/float(d) if d > 0 else 0; 
                     if l == "data":
@@ -395,7 +395,7 @@ class FakeRateMET1D(FakeRateMET1Bin):
                     h[0].SetBinContent(b, f) 
                     h[0].SetBinError(b, df)
             # step 1: make plots of FR vs MET in each bin
-            for ix in xrange(1,datax[0].GetNbinsX()+1):
+            for ix in range(1,datax[0].GetNbinsX()+1):
                 xlabel = "%s_%g_%g" % (p.name.replace("_"+xname,""),datax[0].GetXaxis().GetBinLowEdge(ix),datax[0].GetXaxis().GetBinUpEdge(ix))
                 self.fill1DY(sig, sigy, ix) 
                 self.fill1DY(bkg, bkgy, ix) 
@@ -425,7 +425,7 @@ class FakeRateMET1D(FakeRateMET1Bin):
                         text = "    Fake rate vs %s for %s in %s\n" % (p.name,l,xlabel)
                         text += "%3s   %8s  %8s    %6s +/- %6s\n" % ("bin", "xmin ", "xmax ", "value", "error ")
                         text += "%3s   %8s  %8s    %6s-----%6s\n" % ("---", "------", "------", "------", "------")
-                        for b in xrange(1,h[0].GetNbinsX()+1):
+                        for b in range(1,h[0].GetNbinsX()+1):
                             n,d = h[0].GetBinContent(b), h[1].GetBinContent(b)
                             f = n/float(d) if d > 0 else 0; 
                             if l == "data":
@@ -468,7 +468,7 @@ class FakeRateMET1D(FakeRateMET1Bin):
                         if ext == "txt": continue
                         c1.Print("%s/FR_%s_%s_slice_%s.%s" % (self._denDir, p.name, "stack", xlabel, ext))
                 else:
-                    print "No idea how to handle a " + data[0].ClassName()
+                    print("No idea how to handle a " + data[0].ClassName())
             for i in 0,1: sigx[i].SetLineColor(color['qcd'])
             for i in 0,1: bkgx[i].SetLineColor(color['ewk'])
             for i in 0,1: datax[i].SetLineColor(color['data'])
@@ -559,7 +559,7 @@ class FakeRateMCSub1D:
                     text += "%3s   %8s  %8s    %6s +/- %6s\n" % ("bin", "xmin ", "xmax ", "value", "error ")
                     text += "%3s   %8s  %8s    %6s-----%6s\n" % ("---", "------", "------", "------", "------")
                     h.append(h[0].Clone(h[0].GetName()+"_FR_"))
-                    for b in xrange(1,h[0].GetNbinsX()+1):
+                    for b in range(1,h[0].GetNbinsX()+1):
                         n,d = h[0].GetBinContent(b), h[1].GetBinContent(b)
                         if l == "dsub":
                             sn,sd = bkg[0].GetBinContent(b), bkg[1].GetBinContent(b)
@@ -632,7 +632,7 @@ class FakeRateMCSub1D:
                             if ext == "txt": continue
                             c1.Print("%s/FR_%s_%s_%s.%s" % (self._denDir, p.name, "unrolled_"+l, self._myname, ext))
             else:
-                print "No idea how to handle a " + data[0].ClassName()
+                print("No idea how to handle a " + data[0].ClassName())
 
 class FakeRateUCx1D(FakeRateMCSub1D):
     def __init__(self,plotFileName, denDir, numDir, invMetDir, options):
@@ -642,7 +642,7 @@ class FakeRateUCx1D(FakeRateMCSub1D):
         self._init = False
     def integral(self,h,xmin,xmax):
         n = 0
-        for b in xrange(1,h.GetNbinsX()+1):
+        for b in range(1,h.GetNbinsX()+1):
             if (h.GetXaxis().GetBinCenter(b) > xmin and h.GetXaxis().GetBinCenter(b) < xmax):
                 n  += h.GetBinContent(b)
         return n
@@ -657,7 +657,7 @@ class FakeRateUCx1D(FakeRateMCSub1D):
             if hmc:
                 nmc += self.integral(hmc,60.,100.) 
         self._sf = ndata/nmc
-        print "UCx EWK normalization method: sf = ",self._sf
+        print("UCx EWK normalization method: sf = ",self._sf)
         self._init = True
     def scaleMC(self,proc,hnum,hden,mca):
         if mca.isBackground(proc):
@@ -691,7 +691,7 @@ if __name__ == "__main__":
         FR = FakeRateUCx1D(args[1], args[2], args[3], args[5], options) 
         FR.makePlotsBySource(mca)
     elif len(args) == 5 and args[4] == "MC":
-        print "MC"
+        print("MC")
         if options.out == None: options.out = "FR_MC_"+basename(args[1]).replace(".txt","")+".root"
         FR = MCFakeRate(args[1], args[2], args[3], options) 
         FR.makePlotsBySource(mca)

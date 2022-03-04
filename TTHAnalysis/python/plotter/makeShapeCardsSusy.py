@@ -33,36 +33,36 @@ def fixNegVariations(down, central):
 def cutCentralValueAtZero(mca,cut,pname,oldplots):
     if pname=='data': return
     oldplot = oldplots[pname]
-    for b in xrange(1,oldplot.GetNbinsX()+1):
+    for b in range(1,oldplot.GetNbinsX()+1):
         if oldplot.GetBinContent(b)<=0:
             old = oldplot.GetBinContent(b),oldplot.GetBinError(b)
             oldplot.SetBinContent(b,1e-5)
             oldplot.SetBinError(b,1e-6)
-            if old!=(0,0): print 'cutCentralValueAtZero: Fixing bin %d in %s: set to %f +/- %f (was %f +/- %f)'%(b,pname,oldplot.GetBinContent(b),oldplot.GetBinError(b),old[0],old[1])
+            if old!=(0,0): print('cutCentralValueAtZero: Fixing bin %d in %s: set to %f +/- %f (was %f +/- %f)'%(b,pname,oldplot.GetBinContent(b),oldplot.GetBinError(b),old[0],old[1]))
 
 def takeFakesPredictionFromMC(mca,cut,pname,oldplots):
     if pname=='data': return
     oldplot = oldplots[pname]
-    for b in xrange(1,oldplot.GetNbinsX()+1):
+    for b in range(1,oldplot.GetNbinsX()+1):
         if oldplot.GetBinContent(b)<=0:
             old= oldplot.GetBinContent(b),oldplot.GetBinError(b)
             oldplot.SetBinContent(b,1e-5)
             new = oldplots['_special_TT_foremptybins'].GetBinContent(b)
             oldplot.SetBinError(b,new if new>1e-4 else 1e-6)
-            print 'takeFakesPredictionFromMC: Fixing bin %d in %s: set to %f +/- %f (was %f +/- %f)'%(b,pname,oldplot.GetBinContent(b),oldplot.GetBinError(b),old[0],old[1])
+            print('takeFakesPredictionFromMC: Fixing bin %d in %s: set to %f +/- %f (was %f +/- %f)'%(b,pname,oldplot.GetBinContent(b),oldplot.GetBinError(b),old[0],old[1]))
 
 def normTo1Observed(mca,cut,pname,oldplots):
     if pname=='data': return
     oldplot = oldplots[pname]
     old = oldplot.Integral()
     oldplot.Scale(1.0/old)
-    print 'normTo1Observed: Normalizing %s to 1 (was %f)'%(pname,old)
+    print('normTo1Observed: Normalizing %s to 1 (was %f)'%(pname,old))
 
 def compilePostFixMap(inlist,relist):
     for m in inlist:
         dset,function = m.split("=")
         if dset[-1] == "*": dset = dset[:-1]
-        else: raise RuntimeError, 'Incorrect plotscalemap format: %s'%m
+        else: raise RuntimeError('Incorrect plotscalemap format: %s'%m)
         relist.append((re.compile(dset.strip()+"$"),globals()[function]))
 postfixes = []
 compilePostFixMap(options.postfixmap,postfixes)
@@ -87,9 +87,9 @@ if len(options.infile)>0:
             if h: report[p] = h
         thefile.Close()
     for p in mca.listSignals(True)+mca.listBackgrounds(True)+['data']:
-        if not p in report.keys() and not p in options.ignore: todo.append(p)
-    print report.keys()
-    print todo
+        if not p in list(report.keys()) and not p in options.ignore: todo.append(p)
+    print(list(report.keys()))
+    print(todo)
     for p in todo:
         report.update(mca.getPlotsRaw("x", args[2], args[3], cuts.allCuts(), nodata=options.asimov, process=p, closeTreeAfter=True))
 ## no infile given, process all histos
@@ -99,7 +99,7 @@ else:
 
 
 if options.hardZero:
-    for key,hist in report.iteritems():
+    for key,hist in report.items():
         for bin in range(1,hist.GetNbinsX()+1):
             if hist.GetBinContent(bin) <= 0:
                 hist.SetBinContent(bin, 0.0001)
@@ -128,7 +128,7 @@ if options.asimov:
 else:
     report['data_obs'] = report['data'].Clone("x_data_obs") 
 
-allyields = dict([(p,h.Integral()) for p,h in report.iteritems()])
+allyields = dict([(p,h.Integral()) for p,h in report.items()])
 procs = []; iproc = {}
 signals, backgrounds = [], []
 for i,s in enumerate(mca.listSignals()):
@@ -150,7 +150,7 @@ for sysfile in args[4:]:
         if len(line) == 0: continue
         field = [f.strip() for f in line.split(':')]
         if len(field) < 4:
-            raise RuntimeError, "Malformed line %s in file %s"%(line.strip(),sysfile)
+            raise RuntimeError("Malformed line %s in file %s"%(line.strip(),sysfile))
         elif len(field) == 4 or field[4] == "lnN":
             (name, procmap, binmap, amount) = field[:4]
             if re.match(binmap+"$",binname) == None: continue
@@ -172,14 +172,14 @@ for sysfile in args[4:]:
             if name not in systsEnv: systsEnv[name] = []
             systsEnv[name].append((re.compile(procmap+"$"),amount,field[4],field[5].split(',')))
         else:
-            raise RuntimeError, "Unknown systematic type %s" % field[4]
+            raise RuntimeError("Unknown systematic type %s" % field[4])
     if options.verbose > 0:
-        print "Loaded %d lnN systematics" % len(systs)
-        print "Loaded %d lnU systematics" % len(systsU)
-        print "Loaded %d envelop systematics" % len(systsEnv)
+        print("Loaded %d lnN systematics" % len(systs))
+        print("Loaded %d lnU systematics" % len(systsU))
+        print("Loaded %d envelop systematics" % len(systsEnv))
 
 
-for name in systs.keys():
+for name in list(systs.keys()):
     effmap = {}
     for p in procs:
         effect = "-"
@@ -187,7 +187,7 @@ for name in systs.keys():
             if re.match(procmap, p): effect = amount
         effmap[p] = effect
     systs[name] = effmap
-for name in systsU.keys():
+for name in list(systsU.keys()):
     effmap = {}
     for p in procs:
         effect = "-"
@@ -196,7 +196,7 @@ for name in systsU.keys():
         effmap[p] = effect
     systsU[name] = effmap
 
-for name in systsEnv.keys():
+for name in list(systsEnv.keys()):
     effmap0  = {}
     effmap12 = {}
     for p in procs:
@@ -224,7 +224,7 @@ for name in systsEnv.keys():
             nbin = nominal.GetNbinsX()
             xmin = nominal.GetBinCenter(1)
             xmax = nominal.GetBinCenter(nbin)
-            for b in xrange(1,nbin+1):
+            for b in range(1,nbin+1):
                 x = (nominal.GetBinCenter(b)-xmin)/(xmax-xmin)
                 c1 = 2*(x-0.5)         # straight line from (0,-1) to (1,+1)
                 c2 = 1 - 8*(x-0.5)**2  # parabola through (0,-1), (0.5,~1), (1,-1)
@@ -251,7 +251,7 @@ for name in systsEnv.keys():
             p0Up = report["%s_%s_Up" % (p, effect)]
             p0Dn = report["%s_%s_Dn" % (p, effect)]
             if not p0Up or not p0Dn: 
-                raise RuntimeError, "Missing templates %s_%s_(Up,Dn) for %s" % (p,effect,name)
+                raise RuntimeError("Missing templates %s_%s_(Up,Dn) for %s" % (p,effect,name))
             if options.noNegVar:
                 p0Up = fixNegVariations(p0Up, report[p])
                 p0Dn = fixNegVariations(p0Dn, report[p])
@@ -268,7 +268,7 @@ for name in systsEnv.keys():
             nominal = report[p]
             p0Up = nominal.Clone("%s_%sUp"% (nominal.GetName(),name))
             p0Dn = nominal.Clone("%s_%sDn"% (nominal.GetName(),name))
-            for bin in xrange(1,nominal.GetNbinsX()+1):
+            for bin in range(1,nominal.GetNbinsX()+1):
                 for binmatch in morefields[0]:
                     if re.match(binmatch+"$",'%d'%bin):
                         p0Up.SetBinContent(bin,p0Up.GetBinContent(bin)*effect)
@@ -290,7 +290,7 @@ for name in systsEnv.keys():
                 mca._projection.scaleSystTemplate(name,nominal,p0Dn)
         elif mode in ["stat_foreach_shape_bins"]:
             nominal = report[p]
-            for bin in xrange(1,nominal.GetNbinsX()+1):
+            for bin in range(1,nominal.GetNbinsX()+1):
                 for binmatch in morefields[0]:
                     if re.match(binmatch+"$",'%d'%bin):
                         p0Up = nominal.Clone("%s_%s_%s_%s_bin%dUp"% (nominal.GetName(),name,binname,p,bin))
@@ -308,7 +308,7 @@ for name in systsEnv.keys():
             effect0  = "1"
             effect12 = "-"
             if mca._projection != None:
-                raise RuntimeError,'mca._projection.scaleSystTemplate not implemented in the case of stat_foreach_shape_bins'
+                raise RuntimeError('mca._projection.scaleSystTemplate not implemented in the case of stat_foreach_shape_bins')
 ###                mca._projection.scaleSystTemplate(name,nominal,p0Up) # should be implemented differently
 ###                mca._projection.scaleSystTemplate(name,nominal,p0Dn) # should be implemented differently
         elif mode in ["alternateShape", "alternateShapeOnly"]:
@@ -320,7 +320,7 @@ for name in systsEnv.keys():
             if mode == "alternateShapeOnly":
                 alternate.Scale(nominal.Integral()/alternate.Integral())
             mirror = nominal.Clone("%s_%sDown" % (nominal.GetName(),name))
-            for b in xrange(1,nominal.GetNbinsX()+1):
+            for b in range(1,nominal.GetNbinsX()+1):
                 y0 = nominal.GetBinContent(b)
                 yA = alternate.GetBinContent(b)
                 yM = y0
@@ -350,7 +350,7 @@ for signal in mca.listSignals():
     myout += "%s/" % signal 
     myprocs = ( backgrounds + [ signal ] ) if signal in signals else backgrounds
     if not os.path.exists(myout): os.system("mkdir -p "+myout)
-    myyields = dict([(k,v) for (k,v) in allyields.iteritems()]) 
+    myyields = dict([(k,v) for (k,v) in allyields.items()]) 
     datacard = open(myout+filename+".card.txt", "w"); 
     datacard.write("## Datacard for cut file %s (signal %s)\n"%(args[1],signal))
     datacard.write("## Event selection: \n")
@@ -370,20 +370,20 @@ for signal in mca.listSignals():
     datacard.write('process         '+(" ".join([kpatt % iproc[p]    for p in myprocs]))+"\n")
     datacard.write('rate            '+(" ".join([fpatt % myyields[p] for p in myprocs]))+"\n")
     datacard.write('##----------------------------------\n')
-    for name,effmap in systs.iteritems():
+    for name,effmap in systs.items():
         datacard.write(('%-12s lnN' % name) + " ".join([kpatt % effmap[p]   for p in myprocs]) +"\n")
-    for name,effmap in systsU.iteritems():
+    for name,effmap in systsU.items():
         datacard.write(('%-12s lnU' % name) + " ".join([kpatt % effmap[p]   for p in myprocs]) +"\n")
-    for name,(effmap0,effmap12,mode) in systsEnv.iteritems():
+    for name,(effmap0,effmap12,mode) in systsEnv.items():
         if mode in ["templates","lnN_in_shape_bins"]:
             datacard.write(('%-10s shape' % name) + " ".join([kpatt % effmap0[p] for p in myprocs]) +"\n")
         if mode == "stat_foreach_shape_bins":
             nbins = None
             for p in myprocs:
-                if nbins and nbins!=report[p].GetNbinsX(): raise RuntimeError,'Histos with different number of bins for different processes'
+                if nbins and nbins!=report[p].GetNbinsX(): raise RuntimeError('Histos with different number of bins for different processes')
                 nbins = report[p].GetNbinsX()
                 if effmap0[p] in ['-','0']: continue
-                for bin in xrange(1,nbins+1):
+                for bin in range(1,nbins+1):
                     datacard.write(('%-10s shape' % ("%s_%s_%s_bin%d"%(name,binname,p,bin))) + " ".join([kpatt % effmap0[_p] for _p in myprocs]) +"\n")
         if mode == "envelop":
             datacard.write(('%-10s shape' % (name+"0")) + " ".join([kpatt % effmap0[p]  for p in myprocs]) +"\n")
@@ -391,22 +391,22 @@ for signal in mca.listSignals():
             datacard.write(('%-10s shape' % (name+"1")) + " ".join([kpatt % effmap12[p] for p in myprocs]) +"\n")
             datacard.write(('%-10s shape' % (name+"2")) + " ".join([kpatt % effmap12[p] for p in myprocs]) +"\n")
     if options.verbose > -1:
-        print "Wrote to ",myout+filename+".card.txt"
+        print("Wrote to ",myout+filename+".card.txt")
     if options.verbose > 0:
-        print "="*120
+        print("="*120)
         os.system("cat %s.card.txt" % (myout+filename));
-        print "="*120
+        print("="*120)
 
 myout = outdir+"/common/";
 if not os.path.exists(myout): os.system("mkdir -p "+myout)
 workspace = ROOT.TFile.Open(myout+filename+".input.root", "RECREATE")
-for n,h in report.iteritems():
-    if options.verbose > 0: print "\t%s (%8.3f events)" % (h.GetName(),h.Integral())
+for n,h in report.items():
+    if options.verbose > 0: print("\t%s (%8.3f events)" % (h.GetName(),h.Integral()))
     workspace.WriteTObject(h,h.GetName())
 workspace.Close()
 
 if options.verbose > -1:
-    print "Wrote to ",myout+filename+".input.root"
+    print("Wrote to ",myout+filename+".input.root")
 
 if options.bookkeeping:
     fcmd = open(outdir+"/makeShapeCardsSusy_command.txt", "w")

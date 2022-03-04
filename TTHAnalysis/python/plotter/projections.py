@@ -34,13 +34,13 @@ class Projections:
                 factor = 3 ## FIXME
         return factor 
     def scaleReport(self,report):
-        for key in report.keys():
+        for key in list(report.keys()):
             sf = self.scaleYield(key)
             for i,(cut,(n,e)) in enumerate(report[key]):
                 report[key][i][1][0] *= sf
                 report[key][i][1][1] *= sf
     def scalePlots(self,plots):
-        for key in plots.keys():
+        for key in list(plots.keys()):
             sf = self.scaleYield(key)
             plots[key].Scale(sf)
     def scaleSyst(self,name,value):
@@ -51,7 +51,7 @@ class Projections:
                 if N in name: return sqrt(value)
         return pow(value, 1.0 / sqrt(self._tolumi / self._lumi))
     def scaleSystTemplate(self,name,nominal,alternate):
-        for b in xrange(1,nominal.GetNbinsX()+1):
+        for b in range(1,nominal.GetNbinsX()+1):
             y0 = nominal.GetBinContent(b)
             yA = alternate.GetBinContent(b)
             if yA != 0 and y0 != 0:

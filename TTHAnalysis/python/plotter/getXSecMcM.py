@@ -10,7 +10,7 @@ def go(dataset):
     try:
         dsets = dasql("dataset dataset=%s" % dataset)['data']
     except:
-        print "Failed DAS query for %s" % dataset
+        print("Failed DAS query for %s" % dataset)
         return
     if "*" in dataset:
         for d in dsets:
@@ -21,7 +21,7 @@ def go(dataset):
             if 'mcm' in record:
                 mcm = record['mcm']
                 gen = mcm['generator_parameters'][0]
-                print mcm['dataset_name'], gen['cross_section'], gen['filter_efficiency'], mcm['completed_events']
+                print(mcm['dataset_name'], gen['cross_section'], gen['filter_efficiency'], mcm['completed_events'])
 
 if __name__ == "__main__":
     go(argv[1])

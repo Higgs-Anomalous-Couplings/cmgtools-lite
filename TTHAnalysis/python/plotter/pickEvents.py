@@ -19,14 +19,14 @@ rls = []
 rles = []
 filesbypdera = {}
 for rle in evlist:
-    (run,lumi,event) = map(int, rle.split(":"))
+    (run,lumi,event) = list(map(int, rle.split(":")))
     if (run,lumi,event) in rles: continue
     rles.append((run,lumi,event))
     if (run,lumi) in rls: continue
     rls.append((run,lumi))
     for (ename,(rmin,rmax)) in ERAs:
         if rmin <= run and run <= rmax:
-            for pd,attrs in PDs.iteritems():
+            for pd,attrs in PDs.items():
                 if (ename,pd) not in filesbypdera: filesbypdera[(ename,pd)] = []
                 vnum = '1'
                 if ename in attrs['vnums']: vnum = attrs['vnums'][ename]
@@ -36,7 +36,7 @@ for rle in evlist:
                 for token in out.split():
                     if '.root' in token: filesbypdera[(ename,pd)].append(token)
             break
-for (ename,pd),files in filesbypdera.iteritems():
+for (ename,pd),files in filesbypdera.items():
     cfg = """
 import FWCore.ParameterSet.Config as cms
 process = cms.Process('cmsMerge')
@@ -63,7 +63,7 @@ process.end = cms.EndPath(process.out)
 )
     stream = open("pick_%s_%s.py" % (pd,ename), 'w')
     stream.write(cfg)
-    print "Wrote to pick_%s_%s.py" % (pd,ename)
+    print("Wrote to pick_%s_%s.py" % (pd,ename))
 #for PD in Double{EG,Muon} MuonEG; do grep $PD files | sort | uniq | ~/pl/cmsMerge.pl --out=$PD-Run2015D_SR.root | cat - select | tee slurp_$PD-Run2015D_SR.py; done
 #cat events.txt | awk 'BEGIN{ORS=""; print "process.source.eventsToProcess = cms.untracked.VEventRange(["; ORS=", ";} {print "\""$1"\""; }  END{ORS=""; print "])\n"; }' | tee select
 #cut -d: -f1-2  events.txt | sort | uniq  | awk 'BEGIN{ORS=""; print "process.source.lumisToProcess = cms.untracked.VLuminosityBlockRange(["; ORS=", ";} {print "\""$1"\""; }  END{ORS=""; print "])\n"; }'  | tee -a select

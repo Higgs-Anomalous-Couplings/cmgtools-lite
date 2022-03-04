@@ -44,7 +44,7 @@ if __name__ == "__main__":
     for O,MLD in ("prefit","prefit"), ("postfit_b","fit_b"), ("postfit_s","fit_s"):
       normset = mlfile.Get("norm_"+MLD)
       mldir  = mlfile.GetDirectory("shapes_"+MLD);
-      if not mldir: raise RuntimeError, mlfile
+      if not mldir: raise RuntimeError(mlfile)
       outfile = ROOT.TFile(basedir + "/"+O+"_" + basename(args[2]), "RECREATE")
       processes = [p for p in reversed(mca.listBackgrounds())] + mca.listSignals()
       hdata = infile.Get(var+"_data")
@@ -59,28 +59,28 @@ if __name__ == "__main__":
         pout = mergeMap[p] if p in mergeMap else p
         h = infile.Get(var+"_"+pout)
         if not h: 
-            print "Missing %s_%s for %s" % (var,pout, p)
+            print("Missing %s_%s for %s" % (var,pout, p))
             continue
         h = h.Clone(var+"_"+p)
         h.SetDirectory(0)
         hpf = mldir.Get("%s/%s" % (channel,p))
         hpn = normset.find("%s/%s" % (channel,p))
         if not hpf: 
-            if h.Integral() > 0 and p not in mergeMap: raise RuntimeError, "Could not find post-fit shape for %s" % p
+            if h.Integral() > 0 and p not in mergeMap: raise RuntimeError("Could not find post-fit shape for %s" % p)
             continue
         if not hpn:
-            if h.Integral() > 0 and p not in mergeMap: raise RuntimeError, "Could not find post-fit normalization for %s" % p
+            if h.Integral() > 0 and p not in mergeMap: raise RuntimeError("Could not find post-fit normalization for %s" % p)
         if onlynorm:
             prev_integral = h.Integral()
             scale_content = hpn.getVal()/prev_integral
-            for b in xrange(1, h.GetNbinsX()+1):
+            for b in range(1, h.GetNbinsX()+1):
                 h.SetBinContent(b, h.GetBinContent(b)*scale_content)
                 h.SetBinError(b, h.GetBinError(b)*scale_content)
         else:
-            for b in xrange(1, h.GetNbinsX()+1):
+            for b in range(1, h.GetNbinsX()+1):
                 h.SetBinContent(b, hpf.GetBinContent(b))
                 h.SetBinError(b, hpf.GetBinError(b))
-        print 'adding',p,'with norm',h.Integral()
+        print('adding',p,'with norm',h.Integral())
         #pout = "ttH" if "ttH_" in p else p;
         #if pout in plots:
         #    plots[pout].Add(h)
@@ -96,20 +96,20 @@ if __name__ == "__main__":
       htotpf = mldir.Get(channel+"/total")
 #      hbkg = hdata.Clone(var+"_total_background")
 #      hbkgpf = mldir.Get(channel+"/total_background")
-      print 'tot norm is ',htot.Integral()
+      print('tot norm is ',htot.Integral())
       if onlynorm:
           hpn = normset.find("%s/total" % channel)
           rel_error = hpn.getError()/hpn.getVal()
-          print rel_error
-          for b in xrange(1, htot.GetNbinsX()+1):
+          print(rel_error)
+          for b in range(1, htot.GetNbinsX()+1):
               htot.SetBinError(b, hypot(htot.GetBinError(b),htot.GetBinContent(b)*rel_error))
       else:
-          for b in xrange(1, h.GetNbinsX()+1):
+          for b in range(1, h.GetNbinsX()+1):
               htot.SetBinContent(b, htotpf.GetBinContent(b))
               htot.SetBinError(b, htotpf.GetBinError(b))
 #          hbkg.SetBinContent(b, hbkgpf.GetBinContent(b))
 #          hbkg.SetBinError(b, hbkgpf.GetBinError(b))
-      for h in plots.values() + [htot]:
+      for h in list(plots.values()) + [htot]:
          outfile.WriteTObject(h)
       doRatio = True
       htot.GetYaxis().SetRangeUser(0, 1.8*max(htot.GetMaximum(), hdata.GetMaximum()))
@@ -188,7 +188,7 @@ if __name__ == "__main__":
         if not mcap.isSignal(pout): 
             pyields["background"][0] += rvar.getVal()       
             pyields["background"][1] += rvar.getError()**2
-      for p in pyields.iterkeys():
+      for p in pyields.keys():
         if p != "ttH": pyields[p][1] = sqrt(pyields[p][1])
       maxlen = max([len(mcap.getProcessOption(p,'Label',p)) for p in mcap.listSignals(allProcs=True) + mcap.listBackgrounds(allProcs=True)]+[7])
       fmt    = "%%-%ds %%9.2f +/- %%9.2f\n" % (maxlen+1)

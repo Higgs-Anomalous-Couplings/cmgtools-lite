@@ -32,13 +32,13 @@ parser.add_option("--s2v", "--scalar2vector",     dest="doS2V",    action="store
  
 (options, args) = parser.parse_args()
 
-if options.cut and options.cutfile: raise RuntimeError, "You can't specify both a cut and a cutfile"
+if options.cut and options.cutfile: raise RuntimeError("You can't specify both a cut and a cutfile")
 
 jsonmap = {}
 if options.json:
     J = json.load(open(options.json, 'r'))
-    for r,l in J.iteritems():
-        jsonmap[long(r)] = l
+    for r,l in J.items():
+        jsonmap[int(r)] = l
     stderr.write("Loaded JSON %s with %d runs\n" % (options.json, len(jsonmap)))
 
 def testJson(ev):
@@ -61,7 +61,7 @@ class BaseDumper(Module):
         return True
     def makeVars(self,ev):
         leps = Collection(ev,"LepGood","nLepGood") 
-        self.lepsAny = [leps[i] for i in xrange(min(8,ev.nLepGood))]
+        self.lepsAny = [leps[i] for i in range(min(8,ev.nLepGood))]
         self.lepsMVAL = []
         self.lepsMVAT = []
         for l in self.lepsAny: 
@@ -71,7 +71,7 @@ class BaseDumper(Module):
             if l.mva < self.lepMVAT: break
             self.lepsMVAT.append(l)
         jets = Collection(ev,"Jet")
-        self.jetsPtSorted = [ jets[i] for i in xrange(min(8,ev.nJet25)) ]
+        self.jetsPtSorted = [ jets[i] for i in range(min(8,ev.nJet25)) ]
         self.jetsPtSorted.sort(key = lambda j : -j.pt)
         #jetsBad = Collection(ev,"JetFailId")
         #self.jetsBadPtSorted = [ jetsBad[i] for i in xrange(len(jetsBad)) if jetsBad[i].pt > 0 ]
@@ -79,35 +79,35 @@ class BaseDumper(Module):
     def analyze(self,ev):
         if self.options.tree in ["ttHLepTreeProducerBase", "ttHLepTreeProducerTTH"]: self.makeVars(ev)
         if self.options.fmt: 
-            print string.Formatter().vformat(options.fmt.replace("\\t","\t"),[],ev)
+            print(string.Formatter().vformat(options.fmt.replace("\\t","\t"),[],ev))
             return True
-        print "run %6d lumi %4d event %11d : leptons %d (MVA loose %d, MVA tight %d), jets %d (CSV loose %d, CSV medium %d)" % (
-                ev.run, ev.lumi, ev.evt, ev.nLepGood, len(self.lepsMVAL), len(self.lepsMVAT), ev.nJet25, ev.nBJetLoose25, ev.nBJetMedium25)
+        print("run %6d lumi %4d event %11d : leptons %d (MVA loose %d, MVA tight %d), jets %d (CSV loose %d, CSV medium %d)" % (
+                ev.run, ev.lumi, ev.evt, ev.nLepGood, len(self.lepsMVAL), len(self.lepsMVAT), ev.nJet25, ev.nBJetLoose25, ev.nBJetMedium25))
         for i,l in enumerate(self.lepsAny):
-            print "    lepton %d: id %+2d pt %5.1f eta %+4.2f phi %+4.2f    MVA %+4.2f    relIso %5.3f sip3d %5.2f dxy %+4.3f dz %+4.3f   jetPtR %4.2f jetDR %4.3f jetBTag %4.3f" % (
-                    i+1, l.pdgId,l.pt,l.eta,l.phi, l.mva, l.relIso, l.sip3d, 10*l.dxy, 10*l.dz, l.jetPtRatio, l.jetDR, min(1.,max(0.,l.jetBTagCSV))),
+            print("    lepton %d: id %+2d pt %5.1f eta %+4.2f phi %+4.2f    MVA %+4.2f    relIso %5.3f sip3d %5.2f dxy %+4.3f dz %+4.3f   jetPtR %4.2f jetDR %4.3f jetBTag %4.3f" % (
+                    i+1, l.pdgId,l.pt,l.eta,l.phi, l.mva, l.relIso, l.sip3d, 10*l.dxy, 10*l.dz, l.jetPtRatio, l.jetDR, min(1.,max(0.,l.jetBTagCSV))), end=' ')
             if self.options.ismc:
-                print "   mcMatch %+3d" % (l.mcMatchId if l.mcMatchId > 0 else -l.mcMatchAny),
+                print("   mcMatch %+3d" % (l.mcMatchId if l.mcMatchId > 0 else -l.mcMatchAny), end=' ')
                 if self.options.moremc:
-                    print "   mcDRB %4.2f" % (l.mcDeltaRB if l.mcMatchAny == 2 and l.mcDeltaRB < 99 else 9.99),
+                    print("   mcDRB %4.2f" % (l.mcDeltaRB if l.mcMatchAny == 2 and l.mcDeltaRB < 99 else 9.99), end=' ')
             if abs(l.pdgId) == 11:
-                print "   tightId %d mvaId %5.3f misHit %d conVeto %d tightCh %d mvaIdTrig %5.3f" % (l.tightId, l.mvaId, l.lostHits, l.convVeto, l.tightCharge, l.mvaIdTrig) #, l.relIso03/(l.pfpt if l.pfpt else l.pt), l.pfpt)
+                print("   tightId %d mvaId %5.3f misHit %d conVeto %d tightCh %d mvaIdTrig %5.3f" % (l.tightId, l.mvaId, l.lostHits, l.convVeto, l.tightCharge, l.mvaIdTrig)) #, l.relIso03/(l.pfpt if l.pfpt else l.pt), l.pfpt)
             else:
-                print "   tightId %d lostHits %2d tightCh %d" % (l.tightId, l.lostHits, l.tightCharge)
+                print("   tightId %d lostHits %2d tightCh %d" % (l.tightId, l.lostHits, l.tightCharge))
         if self.options.tau: 
             taus =  [g for g in Collection(ev,"Tau") if g.pt > 0 ]
             for i,l in enumerate(taus):
-                print "    tau    %d: id %+2d pt %5.1f eta %+4.2f phi %+4.2f    rawIMVA2 %+.3f  CI3hit WP %d IMVA2 WP %d  dxy %+4.3f dz %+4.3f " % (
-                        i+1, l.pdgId,l.pt,l.eta,l.phi, l.isoMVA2, l.idCI3hit, l.idMVA2, 10*l.dxy, 10*l.dz),
+                print("    tau    %d: id %+2d pt %5.1f eta %+4.2f phi %+4.2f    rawIMVA2 %+.3f  CI3hit WP %d IMVA2 WP %d  dxy %+4.3f dz %+4.3f " % (
+                        i+1, l.pdgId,l.pt,l.eta,l.phi, l.isoMVA2, l.idCI3hit, l.idMVA2, 10*l.dxy, 10*l.dz), end=' ')
                 if self.options.ismc:
-                    print "   mcMatch %+3d" % l.mcMatchId
+                    print("   mcMatch %+3d" % l.mcMatchId)
                 else:
-                    print ""
+                    print("")
         for i,j in enumerate(self.jetsPtSorted):
             if self.options.ismc:
-                print "    jet %d:  pt %5.1f uncorrected pt %5.1f eta %+4.2f phi %+4.2f  btag %4.3f mcMatch %2d mcFlavour %d mcPt %5.1f" % (i, j.pt, j.rawPt, j.eta, j.phi, min(1.,max(0.,j.btagCSV)), j.mcMatchId, j.mcFlavour, j.mcPt)
+                print("    jet %d:  pt %5.1f uncorrected pt %5.1f eta %+4.2f phi %+4.2f  btag %4.3f mcMatch %2d mcFlavour %d mcPt %5.1f" % (i, j.pt, j.rawPt, j.eta, j.phi, min(1.,max(0.,j.btagCSV)), j.mcMatchId, j.mcFlavour, j.mcPt))
             else:
-                print "    jet %d:  pt %5.1f uncorrected pt %5.1f eta %+4.2f phi %+4.2f  btag %4.3f" % (i+1, j.pt, j.rawPt, j.eta, j.phi, min(1.,max(0.,j.btagCSV)))
+                print("    jet %d:  pt %5.1f uncorrected pt %5.1f eta %+4.2f phi %+4.2f  btag %4.3f" % (i+1, j.pt, j.rawPt, j.eta, j.phi, min(1.,max(0.,j.btagCSV))))
         #for i,j in enumerate(self.jetsBadPtSorted):
         #    if self.options.ismc:
         #        print "    bad jet %d:  pt %5.1f uncorrected pt %5.1f eta %+4.2f phi %+4.2f  btag %4.3f mcMatch %2d mcFlavour %d/%d mcPt %5.1f  jetId %1d puId %1d" % (i, j.pt, j.rawPt, j.eta, j.phi, min(1.,max(0.,j.btagCSV)), j.mcMatchId, j.mcMatchFlav,j.mcFlavour, j.mcPt, j.looseJetId, j.puJetId)
@@ -115,24 +115,24 @@ class BaseDumper(Module):
         #        print "    bad jet %d:  pt %5.1f uncorrected pt %5.1f eta %+4.2f phi %+4.2f  btag %4.3f  jetId %1d puId %1d" % (i+1, j.pt, j.rawPt, j.eta, j.phi, min(1.,max(0.,j.btagCSV)), j.looseJetId, j.puJetId)
         
  
-        print "    met %6.2f (phi %+4.2f)     mht %6.2f" % (ev.met_pt, ev.met_phi, ev.mhtJet25)
+        print("    met %6.2f (phi %+4.2f)     mht %6.2f" % (ev.met_pt, ev.met_phi, ev.mhtJet25))
         if self.options.ismc:
-            print "    vertices %d    pu weight %5.2f" % (ev.nVert, ev.puWeight)
+            print("    vertices %d    pu weight %5.2f" % (ev.nVert, ev.puWeight))
         else:
-            print "    vertices %d" % (ev.nVert)
+            print("    vertices %d" % (ev.nVert))
         if self.options.moremc:
             gleps = [g for g in Collection(ev,"GenLep") if g.pt > 0 ]
             for i,l in enumerate(gleps):
-                print "    gen lep %d: id %+2d pt %5.1f eta %+4.2f phi %+4.2f sourceId %2d" % (i+1, l.pdgId,l.pt,l.eta,l.phi, l.sourceId)
+                print("    gen lep %d: id %+2d pt %5.1f eta %+4.2f phi %+4.2f sourceId %2d" % (i+1, l.pdgId,l.pt,l.eta,l.phi, l.sourceId))
             gtaus = [g for g in Collection(ev,"GenLepFromTau","nGenLepsFromTau") if g.pt > 0 ]
             for i,l in enumerate(gtaus):
-                print "    gen lep %d: id %+2d pt %5.1f eta %+4.2f phi %+4.2f sourceId %2d " % (i+1, l.pdgId,l.pt,l.eta,l.phi, l.sourceId)
+                print("    gen lep %d: id %+2d pt %5.1f eta %+4.2f phi %+4.2f sourceId %2d " % (i+1, l.pdgId,l.pt,l.eta,l.phi, l.sourceId))
             gbq = Collection(ev,"GenBQuark","nGenBQuarks",2)
-            for i,l in enumerate([gbq[i] for i in 0,1]):
-                print "    gen bq  %d: id %+2d pt %5.1f eta %+4.2f phi %+4.2f " % (i+1, l.pdgId,l.pt,l.eta,l.phi)
+            for i,l in enumerate([gbq[i] for i in (0,1)]):
+                print("    gen bq  %d: id %+2d pt %5.1f eta %+4.2f phi %+4.2f " % (i+1, l.pdgId,l.pt,l.eta,l.phi))
             glq = Collection(ev,"GenQuark","nGenQuarks",6)
             for i,l in enumerate([q for q in glq if q.pt > 0]):
-                print "    gen lq  %d: id %+2d pt %5.1f eta %+4.2f phi %+4.2f sourceId %2d " % (i+1, l.pdgId,l.pt,l.eta,l.phi, l.sourceId)
+                print("    gen lq  %d: id %+2d pt %5.1f eta %+4.2f phi %+4.2f sourceId %2d " % (i+1, l.pdgId,l.pt,l.eta,l.phi, l.sourceId))
             for i,l in enumerate(self.lepsAny):
                 nq = None; nj = None
                 for q in [q for q in gbq if q.pt > 0] + [q for q in glq if q.pt > 0]:
@@ -141,15 +141,15 @@ class BaseDumper(Module):
                 for q in self.jetsPtSorted:
                     dr = deltaR(q,l)
                     if nj == None or dr < deltaR(nj,l): nj = q
-                print "    lepton %d: id %+2d pt %5.1f eta %+4.2f phi %+4.2f    MVA %+4.2f     mcMatch %+3d " % (
-                        i+1, l.pdgId,l.pt,l.eta,l.phi, l.mva,  (l.mcMatchId if l.mcMatchId > 0 else -l.mcMatchAny),  )
+                print("    lepton %d: id %+2d pt %5.1f eta %+4.2f phi %+4.2f    MVA %+4.2f     mcMatch %+3d " % (
+                        i+1, l.pdgId,l.pt,l.eta,l.phi, l.mva,  (l.mcMatchId if l.mcMatchId > 0 else -l.mcMatchAny),  ))
                 if nq != None:
-                    print "      nearest quark: id %+2d pt %5.1f eta %+4.2f phi %+4.2f   (deltaR %6.3f)" % (nq.pdgId,nq.pt,nq.eta,nq.phi, deltaR(nq,l))
+                    print("      nearest quark: id %+2d pt %5.1f eta %+4.2f phi %+4.2f   (deltaR %6.3f)" % (nq.pdgId,nq.pt,nq.eta,nq.phi, deltaR(nq,l)))
                 if nj != None:
-                    print "      nearest jet: pt %5.1f eta %+4.2f phi %+4.2f btag %4.3f mcMatch %2d mcFlavour %d/%d   (deltaR %6.3f)" % (nj.pt,nj.eta,nj.phi, min(1.,max(0.,nj.btagCSV)), nj.mcMatchId, nj.mcMatchFlav, nj.mcFlavour, deltaR(nj,l))
-        print ""
-        print ""
-        print ""
+                    print("      nearest jet: pt %5.1f eta %+4.2f phi %+4.2f btag %4.3f mcMatch %2d mcFlavour %d/%d   (deltaR %6.3f)" % (nj.pt,nj.eta,nj.phi, min(1.,max(0.,nj.btagCSV)), nj.mcMatchId, nj.mcMatchFlav, nj.mcFlavour, deltaR(nj,l)))
+        print("")
+        print("")
+        print("")
 
 class SusyDumper(BaseDumper):
     def __init__(self,name,options=None,booker=None):
@@ -173,32 +173,32 @@ class SusyDumper(BaseDumper):
         self.jets = Collection(ev,"Jet","nJet")
     def analyze(self,ev):
         self.makeVars(ev)
-        print "run %6d lumi %4d event %11d : leptons %d (tight %d), jets 40 GeV %d (CSV medium %d), jets 25 GeV %d (CSV medium %d)" % (
-                ev.run, ev.lumi, ev.evt, ev.nLepGood, len(self.lepsTight), ev.nJet40, ev.nBJetMedium40, ev.nJet25, ev.nBJetMedium25)
+        print("run %6d lumi %4d event %11d : leptons %d (tight %d), jets 40 GeV %d (CSV medium %d), jets 25 GeV %d (CSV medium %d)" % (
+                ev.run, ev.lumi, ev.evt, ev.nLepGood, len(self.lepsTight), ev.nJet40, ev.nBJetMedium40, ev.nJet25, ev.nBJetMedium25))
         for i,l in enumerate(self.lepsAny):
-            print "    lepton  %2d: id %+2d pt %5.1f eta %+4.2f phi %+4.2f    tightId %d  relIso03 %5.3f sip3d %5.2f dxy %+5.4f dz %+5.4f   jetPtR %4.2f jetDR %4.3f jetBTag %4.3f" % (
-                    i+1, l.pdgId,l.pt,l.eta,l.phi, l.tightId, l.relIso03, l.sip3d, l.dxy, l.dz, l.jetPtRatio, l.jetDR, min(1.,max(0.,l.jetBTagCSV))),
+            print("    lepton  %2d: id %+2d pt %5.1f eta %+4.2f phi %+4.2f    tightId %d  relIso03 %5.3f sip3d %5.2f dxy %+5.4f dz %+5.4f   jetPtR %4.2f jetDR %4.3f jetBTag %4.3f" % (
+                    i+1, l.pdgId,l.pt,l.eta,l.phi, l.tightId, l.relIso03, l.sip3d, l.dxy, l.dz, l.jetPtRatio, l.jetDR, min(1.,max(0.,l.jetBTagCSV))), end=' ')
             if not ev.isData:
-                print "   mcMatch %+3d" % (l.mcMatchId if l.mcMatchId > 0 else -l.mcMatchAny),
+                print("   mcMatch %+3d" % (l.mcMatchId if l.mcMatchId > 0 else -l.mcMatchAny), end=' ')
             if abs(l.pdgId) == 11:
-                print "   lostHits %d conVeto %d tightCh %d" % (l.lostHits, l.convVeto, l.tightCharge)
+                print("   lostHits %d conVeto %d tightCh %d" % (l.lostHits, l.convVeto, l.tightCharge))
                 #print "       ", " ".join("%s %.6f" % (s, getattr(l,s)) for s in "sigmaIEtaIEta dEtaScTrkIn dPhiScTrkIn hadronicOverEm eInvMinusPInv scEta".split())
             else:
-                print "   lostHits %2d tightCh %d" % (l.lostHits, l.tightCharge)
+                print("   lostHits %2d tightCh %d" % (l.lostHits, l.tightCharge))
         for i,j in enumerate(self.jets):
             if not ev.isData:
-                print "    jet %2d:  pt %5.1f uncorrected pt %5.1f eta %+4.2f phi %+4.2f  btag %4.3f mcMatch %2d mcFlavour %d mcPt %5.1f" % (i, j.pt, j.rawPt, j.eta, j.phi, min(1.,max(0.,j.btagCSV)), j.mcMatchId, j.mcFlavour, j.mcPt)
+                print("    jet %2d:  pt %5.1f uncorrected pt %5.1f eta %+4.2f phi %+4.2f  btag %4.3f mcMatch %2d mcFlavour %d mcPt %5.1f" % (i, j.pt, j.rawPt, j.eta, j.phi, min(1.,max(0.,j.btagCSV)), j.mcMatchId, j.mcFlavour, j.mcPt))
             else:
-                print "    jet %2d:  pt %5.1f uncorrected pt %5.1f eta %+4.2f phi %+4.2f  btag %4.3f" % (i+1, j.pt, j.rawPt, j.eta, j.phi, min(1.,max(0.,j.btagCSV)))
+                print("    jet %2d:  pt %5.1f uncorrected pt %5.1f eta %+4.2f phi %+4.2f  btag %4.3f" % (i+1, j.pt, j.rawPt, j.eta, j.phi, min(1.,max(0.,j.btagCSV))))
         for i,l in enumerate(self.lepsOther):
-            print "    bad lep %2d: id %+2d pt %5.1f eta %+4.2f phi %+4.2f    tightId %d  relIso03 %5.3f sip3d %5.2f dxy %+5.4f dz %+5.4f " % (
-                    i+1, l.pdgId,l.pt,l.eta,l.phi, l.tightId, l.relIso03, l.sip3d, l.dxy, l.dz),
+            print("    bad lep %2d: id %+2d pt %5.1f eta %+4.2f phi %+4.2f    tightId %d  relIso03 %5.3f sip3d %5.2f dxy %+5.4f dz %+5.4f " % (
+                    i+1, l.pdgId,l.pt,l.eta,l.phi, l.tightId, l.relIso03, l.sip3d, l.dxy, l.dz), end=' ')
             if not ev.isData:
-                print "   mcMatch %+3d" % (l.mcMatchId if l.mcMatchId > 0 else -l.mcMatchAny),
+                print("   mcMatch %+3d" % (l.mcMatchId if l.mcMatchId > 0 else -l.mcMatchAny), end=' ')
             if abs(l.pdgId) == 11:
-                print "   misHit %d conVeto %d tightCh %d" % (l.lostHits, l.convVeto, l.tightCharge) 
+                print("   misHit %d conVeto %d tightCh %d" % (l.lostHits, l.convVeto, l.tightCharge)) 
             else:
-                print "   lostHits %d tightCh %d" % (l.lostHits, l.tightCharge)
+                print("   lostHits %d tightCh %d" % (l.lostHits, l.tightCharge))
 
         #for i,j in enumerate(self.jetsBadPtSorted):
         #    if self.options.ismc:
@@ -206,16 +206,16 @@ class SusyDumper(BaseDumper):
         #    else:
         #        print "    bad jet %d:  pt %5.1f uncorrected pt %5.1f eta %+4.2f phi %+4.2f  btag %4.3f  jetId %1d puId %1d" % (i+1, j.pt, j.rawPt, j.eta, j.phi, min(1.,max(0.,j.btagCSV)), j.looseJetId, j.puJetId)
        
-        for il1 in xrange(len(self.lepsAny)-1):
-            for il2 in xrange(il1+1,len(self.lepsAny)):
-                print "        m(l%d,l%d) = %6.1f" % (il1+1,il2+1,(self.lepsAny[il1].p4()+self.lepsAny[il2].p4()).M()) 
-        print "    minMll: AFAS %6.1f  AFOS %6.1f   SFOS %6.1f  mZ1 %6.1f " % (ev.minMllAFAS,ev.minMllAFOS,ev.minMllSFOS,ev.mZ1) 
-        print "    met %6.2f (phi %+4.2f)     mhtJet25 %6.2f" % (ev.met_pt, ev.met_phi, ev.mhtJet25)
-        print "    htJet40j %6.2f  htJet25 %6.2f" % (ev.htJet40j, ev.htJet25)
+        for il1 in range(len(self.lepsAny)-1):
+            for il2 in range(il1+1,len(self.lepsAny)):
+                print("        m(l%d,l%d) = %6.1f" % (il1+1,il2+1,(self.lepsAny[il1].p4()+self.lepsAny[il2].p4()).M())) 
+        print("    minMll: AFAS %6.1f  AFOS %6.1f   SFOS %6.1f  mZ1 %6.1f " % (ev.minMllAFAS,ev.minMllAFOS,ev.minMllSFOS,ev.mZ1)) 
+        print("    met %6.2f (phi %+4.2f)     mhtJet25 %6.2f" % (ev.met_pt, ev.met_phi, ev.mhtJet25))
+        print("    htJet40j %6.2f  htJet25 %6.2f" % (ev.htJet40j, ev.htJet25))
         if not ev.isData:
-            print "    vertices %d    pu weight %5.2f" % (ev.nVert, ev.puWeight)
+            print("    vertices %d    pu weight %5.2f" % (ev.nVert, ev.puWeight))
         else:
-            print "    vertices %d" % (ev.nVert)
+            print("    vertices %d" % (ev.nVert))
 
 
 cut = None

@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 #from tree2yield import *
-from CMGTools.TTHAnalysis.plotter.tree2yield import *
-from CMGTools.TTHAnalysis.plotter.projections import *
-from CMGTools.TTHAnalysis.plotter.mcAnalysis import *
-from CMGTools.TTHAnalysis.treeReAnalyzer import *
+from tree2yield import *
+from projections import *
+from mcAnalysis import *
+from treeReAnalyzer import *
 import string
 
 if "/fakeRate_cc.so" not in ROOT.gSystem.GetLibraries(): 
-    ROOT.gROOT.ProcessLine(".L %s/src/CMGTools/TTHAnalysis/python/plotter/fakeRate.cc+" % os.environ['CMSSW_BASE']);
+    ROOT.gROOT.ProcessLine(".L fakeRate.cc+");
 
 class MCDumpEvent:
     def __init__(self):
@@ -42,12 +42,12 @@ class MCDumpModule(Module):
         self.mcde.beginComponent(tty)
         if self.dumpFileName:
             self.dumpFile = open(self.dumpFileName.format(cname=tty.cname()),'w')
-            print "Saving to %s" % self.dumpFileName.format(cname=tty.cname())
+            print("Saving to %s" % self.dumpFileName.format(cname=tty.cname()))
     def openOutFile(self,dumpFileName):
         if "{cname}" in dumpFileName: 
             self.dumpFileName = dumpFileName
             return
-        if self.dumpFile: raise RuntimeError,'Output file already open'
+        if self.dumpFile: raise RuntimeError('Output file already open')
         self.dumpFile = open(dumpFileName,'w')
     def getPassingEntries(self):
         return self.passing_entries
@@ -77,4 +77,4 @@ if __name__ == "__main__":
     if options.dumpFile: mcdm.openOutFile(options.dumpFile)
     el = EventLoop([mcdm])
     mca.processEvents(EventLoop([mcdm]), cut=cut)
-    print 'Passing entries:',mcdm.getPassingEntries()
+    print('Passing entries:',mcdm.getPassingEntries())
