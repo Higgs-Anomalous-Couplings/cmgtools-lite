@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #from mcAnalysis import *
-from CMGTools.TTHAnalysis.plotter.mcAnalysis import *
-import CMGTools.TTHAnalysis.plotter.CMS_lumi as CMS_lumi
+from mcAnalysis import *
+import CMS_lumi as CMS_lumi
 import itertools, math
 
 CMS_lumi.writeExtraText = 1
