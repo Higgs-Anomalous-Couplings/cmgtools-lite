@@ -1,9 +1,0 @@
-*.png
-*.pdf
-*.root.dot
-*.so
-interactive/*.root
-interactive/*.txt
-interactive/*.json
-*.log
-*.d
