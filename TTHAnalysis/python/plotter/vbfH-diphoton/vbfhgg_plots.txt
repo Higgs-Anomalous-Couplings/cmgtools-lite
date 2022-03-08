@@ -99,3 +99,11 @@ D0hplus_za : D0hplus_za: 50,0,1.0; XTitle="D_{0h+}^{Z#gamma}", Legend='TC', Incl
 DCP_za : DCP_za: 50,-1,1.0; XTitle="D_{CP}^{Z#gamma}", Legend='TC', IncludeOverflows=True, Logy=False
 
 Dint_za : Dint_za: 50,-1,1.0; XTitle="D_{int}^{Z#gamma}", Legend='TC', IncludeOverflows=True, Logy=False
+
+kinDNN_prob_bkg : vbfDnnResult_prob_bkg : 40,0,1; XTitle="DNN score (background node)"
+
+kinDNN_prob_vbf : vbfDnnResult_prob_VBF : 40,0,1; XTitle="DNN score (VBF node)"
+
+kinDNN_prob_ggh : vbfDnnResult_prob_ggH : 40,0,1; XTitle="DNN score (ggH node)"
+
+kinDNN_discCats : h2g_catIndex_vbf( vbfDnnResult_prob_VBF, D0minus ) : 9,0.5,9.5; XTitle="VBF categories"

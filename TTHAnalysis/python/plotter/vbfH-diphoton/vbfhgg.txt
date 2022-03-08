@@ -4,7 +4,7 @@ dipho_mass : dipho_mass > 100.0 && dipho_mass < 180.0
 dipho_ptOverM : dipho_lead_ptoM > 0.333 && dipho_sublead_ptoM > 0.25
 dipho_MVA : dipho_leadIDMVA > -0.2 && dipho_subleadIDMVA > -0.2
 dijet_eta : dijet_abs_dEta > 0.0 && fabs(dijet_leadEta) < 4.7 && fabs(dijet_subleadEta) < 4.7 && dijet_minDRJetPho > 0.4
-dijet_pt : dijet_LeadJPt > 40. && dijet_SubJPt > 30.
+dijet_pt : dijet_leadPt > 40. && dijet_subleadPt > 30.
 dijet_Mjj : dijet_Mjj > 250.0
 #tight_dijet_Mjj : dijet_Mjj > 350
 tight_dipho_MVA : dipho_leadIDMVA > 0.5 && dipho_subleadIDMVA > 0.5
