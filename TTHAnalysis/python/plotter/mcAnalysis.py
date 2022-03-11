@@ -193,6 +193,7 @@ class MCAnalysis:
                     if cname == ffrom: cname = fto
                 treename = extra["TreeName"] if "TreeName" in extra else options.tree 
                 objname  = extra["ObjName"]  if "ObjName"  in extra else options.obj
+                self.treename = treename
 
                 basepath = None
                 for treepath in options.path:

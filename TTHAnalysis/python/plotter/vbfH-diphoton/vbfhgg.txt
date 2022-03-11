@@ -3,8 +3,9 @@ dipho_eta : abs(dipho_leadEta) < 2.5 && abs(dipho_subleadEta) < 2.5 && (abs(diph
 dipho_mass : dipho_mass > 100.0 && dipho_mass < 180.0
 dipho_ptOverM : dipho_lead_ptoM > 0.333 && dipho_sublead_ptoM > 0.25
 dipho_MVA : dipho_leadIDMVA > -0.2 && dipho_subleadIDMVA > -0.2
-dijet_eta : dijet_abs_dEta > 0.0 && fabs(dijet_leadEta) < 4.7 && fabs(dijet_subleadEta) < 4.7 && dijet_minDRJetPho > 0.4
-dijet_pt : dijet_leadPt > 40. && dijet_subleadPt > 30.
-dijet_Mjj : dijet_Mjj > 250.0
-#tight_dijet_Mjj : dijet_Mjj > 350
+dijet_reco : dijet_abs_dEta > 0.0
+dijet_pt : dijet_leadPt > 30. && dijet_subleadPt > 30.
+dijet_eta : abs(dijet_leadEta) < 4.7 && abs(dijet_subleadEta) < 4.7 && dijet_minDRJetPho > 0.4
+dijet_Mjj : dijet_Mjj > 250
 tight_dipho_MVA : dipho_leadIDMVA > 0.5 && dipho_subleadIDMVA > 0.5
+tagged : mela_catIndex( dijet_Mjj, dipho_mva, dijet_mva_prob_VBF, dijet_mva_prob_ggH, D0minus ) > 0
