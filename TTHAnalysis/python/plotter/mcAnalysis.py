@@ -193,6 +193,7 @@ class MCAnalysis:
                     if cname == ffrom: cname = fto
                 treename = extra["TreeName"] if "TreeName" in extra else options.tree 
                 objname  = extra["ObjName"]  if "ObjName"  in extra else options.obj
+                self.treename = treename
 
                 basepath = None
                 for treepath in options.path:
@@ -249,16 +250,7 @@ class MCAnalysis:
                 else                     : self._allData[pname] =     [tty]
                 if "data" not in pname:
                     total_w = 1.0
-                    if options.noHeppyTree:
-                        if options.weight:
-                            if (is_w==0): raise RuntimeError("Can't put together a weighted and an unweighted component (%s)" % cnames)
-                            is_w = 1
-                            scale = "(%s)" % field[2]
-                        else:
-                            scale = "1"
-                            if (is_w==1): raise RuntimeError("Can't put together a weighted and an unweighted component (%s)" % cnames)
-                            is_w = 0
-                    else:
+                    if options.heppyTree:
                         if treename != "NanoAOD":
                             pckobj  = pickle.load(open(tty.pckfile,'r'))
                             counters = dict(pckobj)
@@ -275,6 +267,15 @@ class MCAnalysis:
                             total_w += counters['All Events']
                             scale = "(%s)" % field[2]
                         if len(field) == 4: scale += "*("+field[3]+")"
+                    else:
+                        if options.weight:
+                            if (is_w==0): raise RuntimeError("Can't put together a weighted and an unweighted component (%s)" % cnames)
+                            is_w = 1
+                            scale = "(%s)" % field[2]
+                        else:
+                            scale = "1"
+                            if (is_w==1): raise RuntimeError("Can't put together a weighted and an unweighted component (%s)" % cnames)
+                            is_w = 0
                     for p0,s in options.processesToScale:
                         for p in p0.split(","):
                             if re.match(p+"$", pname): scale += "*("+s+")"
@@ -871,7 +872,7 @@ def addMCAnalysisOptions(parser,addTreeToYieldOnesToo=True):
     parser.add_option("--efr", "--external-fitResult", dest="externalFitResult", type="string", default=None, nargs=2, help="External fitResult")
     parser.add_option("--aefr", "--alt-external-fitResults", dest="altExternalFitResults", type="string", default=[], nargs=2, action="append", help="External fitResult")
     parser.add_option("--aefrl", "--alt-external-fitResult-labels", dest="altExternalFitResultLabels", type="string", default=[], nargs=1, action="append", help="External fitResult")
-    parser.add_option("--no-heppy-tree", dest="noHeppyTree", action="store_true", default=False, help="Set to true to read root files when they were not made with Heppy (different convention for path names, might need to be adapted)");
+    parser.add_option("--heppy-tree", dest="heppyTree", action="store_true", default=False, help="Set to true to read root files when they were made with Heppy (different convention for path names, might need to be adapted)");
 
 if __name__ == "__main__":
     from optparse import OptionParser

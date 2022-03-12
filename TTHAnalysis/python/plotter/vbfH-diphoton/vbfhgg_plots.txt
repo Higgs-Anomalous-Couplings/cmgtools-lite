@@ -1,6 +1,6 @@
 dipho_mass: dipho_mass: 100,30,230; XTitle="M_{#gamma#gamma} (GeV)", Legend='TC', IncludeOverflows=True
 
-dipho_mass_narrow: dipho_mass: 40,100,180; XTitle="M_{#gamma#gamma} (GeV)", Legend='TC', IncludeOverflows=True
+dipho_mass_narrow: dipho_mass: 80,100,180; XTitle="M_{#gamma#gamma} (GeV)", Legend='TC', IncludeOverflows=True
 
 dipho_mass_higgs: dipho_mass: 30,110,140; XTitle="M_{#gamma#gamma} (GeV)", Legend='TC', IncludeOverflows=True
 
@@ -42,9 +42,9 @@ dijet_abs_dEta: dijet_abs_dEta: 50,0,10; XTitle="Dijet |#Delta#eta|", Legend='TC
 
 dijet_dEta: dijet_leadEta-dijet_subleadEta: 50,-10,10; XTitle="#Delta#eta(j\,j)", Legend='TC', IncludeOverflows=True
 
-dijet_Mjj: dijet_Mjj: 50,0,5000; XTitle="M_{jj} (GeV)", Legend='TC', IncludeOverflows=True, Logy=True
+Mjj: dijet_Mjj: 50,0,5000; XTitle="M_{jj} (GeV)", Legend='TR', IncludeOverflows=True, Logy=True
 
-dijet_nj: dijet_nj  : 6,-0.5,5.5; XTitle="Number of jets", Legend='TC', IncludeOverflows=True
+nj: dijet_nj  : 6,-0.5,5.5; XTitle="Number of jets", Legend='TC', IncludeOverflows=True
 
 dipho_leadIDMVA: dipho_leadIDMVA  : 50,-1,1; XTitle="Leading photon MVA ID", Legend='TC', IncludeOverflows=True, Logy=True
 
@@ -99,3 +99,11 @@ D0hplus_za : D0hplus_za: 50,0,1.0; XTitle="D_{0h+}^{Z#gamma}", Legend='TC', Incl
 DCP_za : DCP_za: 50,-1,1.0; XTitle="D_{CP}^{Z#gamma}", Legend='TC', IncludeOverflows=True, Logy=False
 
 Dint_za : Dint_za: 50,-1,1.0; XTitle="D_{int}^{Z#gamma}", Legend='TC', IncludeOverflows=True, Logy=False
+
+kinDNN_prob_bkg : vbfDnnResult_prob_bkg : 40,0,1; XTitle="DNN score (background node)"
+
+kinDNN_prob_vbf : vbfDnnResult_prob_VBF : 40,0,1; XTitle="DNN score (VBF node)"
+
+kinDNN_prob_ggh : vbfDnnResult_prob_ggH : 40,0,1; XTitle="DNN score (ggH node)"
+
+discCats : mela_catIndex( dijet_Mjj, dipho_mva, dijet_mva_prob_VBF, dijet_mva_prob_ggH, D0minus ) : 18,0.5,18.5; XTitle="VBF categories"

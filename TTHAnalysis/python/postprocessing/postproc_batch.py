@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import os, sys
 import ROOT
+ROOT.gROOT.SetBatch(True)
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 from importlib import import_module
 from glob import glob
@@ -84,7 +85,7 @@ if __name__ == "__main__":
     parser.add_option("-d", "--dataset", dest="datasets",  type="string", default=[], action="append", help="Process only this dataset (or dataset if specified multiple times)");
     parser.add_option(      "--dataset-rgx", dest="datasetsRgx",  type="string", default=None, help="Process only datasets that match this regexp (or comma-separated list of regexp)");
     parser.add_option("-c", "--chunk",   dest="chunks",    type="int",    default=[], action="append", help="Process only these chunks (works only if a single dataset is selected with -d)");
-    parser.add_option("-N", "--events",  dest="chunkSize", type="int",    default=1000000, help="Default chunk size when splitting trees");
+    parser.add_option("-N", "--events",  dest="chunkSize", type="int",    default=10000000, help="Default chunk size when splitting trees");
     parser.add_option("-p", "--pretend", dest="pretend",   action="store_true", default=False, help="Don't run anything");
     parser.add_option("-j", "--jobs",    dest="jobs",      type="int",    default=1, help="Use N threads");
     parser.add_option("-q", "--queue",   dest="queue",     type="string", default='8nh', help="Run jobs on lxbatch instead of locally");
@@ -122,15 +123,17 @@ if __name__ == "__main__":
         
         # override this... flashhgg have different treename depending on the sample
         if 'GluGluH' in short:
-            treename = 'vbfTagDumper/trees/ggh_125_13TeV_GeneralDipho'
+            treename = 'tagsDumper/trees/ggh_125_13TeV_VBFTag'
         elif 'DiPho' in short:
-            treename = 'vbfTagDumper/trees/dipho_13TeV_GeneralDipho'
+            treename = 'tagsDumper/trees/dipho_13TeV_VBFTag'
         elif 'GJet' in short:
-            treename = 'vbfTagDumper/trees/gjet_anyfake_13TeV_GeneralDipho'
+            treename = 'tagsDumper/trees/gjet_anyfake_13TeV_VBFTag'
+        elif 'JHUGen' in short:
+            treename = 'tagsDumper/trees/%s_13TeV_VBFTag' % short
         elif 'VBF' in short:
-            treename = 'vbfTagDumper/trees/vbf_125_13TeV_GeneralDipho'
+            treename = 'tagsDumper/trees/vbf_125_13TeV_VBFTag'
         else:
-            treename = 'vbfTagDumper/trees/Data_13TeV_GeneralDipho'
+            treename = 'tagsDumper/trees/Data_13TeV_VBFTag'
 
         fname    = D
         if os.path.exists(fname) or (os.path.exists("%s/%s/tree.root.url" % (D,options.tree))):
@@ -155,6 +158,7 @@ if __name__ == "__main__":
             f = ROOT.TFile.Open(fname+"?readaheadsz=65535");
 
             t = f.Get(treename)
+            print "getting entries of tree = ",treename," for sample ",fname
             entries = t.GetEntries()
             f.Close()
             chunk = options.chunkSize
@@ -247,7 +251,7 @@ if __name__ == "__main__":
             if len(modules) == 0: 
                 raise RuntimeError("Running with --noout and no modules does nothing!")
         ppargs=[fin]+args
-        p=PostProcessor(treename,outdir,ppargs,options.cut,options.branchsel,modules,options.compression,options.friend,fout,options.json,options.noOut,options.justcount,_range)
+        p=PostProcessor(treename,outdir,ppargs,options.cut,options.branchsel,modules,options.compression,options.friend,None,options.json,options.noOut,options.justcount,_range)
         p.run()
 
     #print 'this is jobs', jobs
