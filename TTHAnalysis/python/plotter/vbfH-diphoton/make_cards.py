@@ -34,7 +34,7 @@ SCRIPT= "makeShapeCardsHgg.py"
 OPTIONS="{OPTIONS} -L 'ttH-multilepton/functionsTTH.cc' -L 'vbfH-diphoton/functionsH2G.cc'  ".format(OPTIONS=OPTIONS)
 CATPOSTFIX=""
 
-FITVAR="M2G"
+FITVAR="dipho_mass"
 VARBINS='['+','.join([str(b) for b in xrange(100,181)])+']'
 CATFUNCTION_2G="mela_catIndex( dijet_Mjj, dipho_mva, dijet_mva_prob_VBF, dijet_mva_prob_ggH, D0minus )"
 MCASUFFIX=""

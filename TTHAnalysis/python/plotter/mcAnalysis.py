@@ -461,25 +461,40 @@ class MCAnalysis:
             formatted_report.append((cn,copy(thisret)))
         print formatted_report
         return formatted_report
-    def getRooDataSet(self,name,variables,cut,filename=None,process=None):
+    def getRooDataSet(self,name,variables,cut,process=None,filename=None,nodata=False):
         allSig = []; allBg = []
         tasks = {}
+        # suppress roofit messages
+        gKill = ROOT.RooMsgService.instance().globalKillBelow()
+        ROOT.RooMsgService.instance().setGlobalKillBelow(ROOT.RooFit.WARNING)
         for key,ttys in self._allData.iteritems():
             if key == 'data' and nodata: continue
             if process != None and key != process: continue
             for tty in ttys:
                 mytree = tty.getTree()
-                ntot = mytree.GetEntries()
                 fname = filename if filename else "dummy.root"
                 fout = ROOT.TFile(fname,"recreate")
+                elistname = "elist_%s" % name
+                mytree.Draw(">>%s" % elistname,cut)
+                elist = ROOT.gDirectory.Get(elistname)
+                if not elist:
+                    elist = ROOT.TEventList(elistname)
+                mytree.SetEventList(elist)
+                out = mytree.CopyTree('1')
                 wsp = ROOT.RooWorkspace("dummy")
-                selt = mytree.CopyTree(cut)
                 aset = ROOT.RooArgSet()
                 for var in variables:
                     aset.add(wsp.factory(var))
-                ds = ROOT.RooDataSet(name,name,selt,aset)
-                tasks[key] = ds
+                ds = ROOT.RooDataSet(name,name,out,aset)
+                if key not in tasks:
+                    tasks[key] = ds
+                else:
+                    tasks[key].append(ds)
                 os.system("rm -f %s " %fname)
+                mytree.SetEventList(0)
+                del out
+                del elist
+        ROOT.RooMsgService.instance().setGlobalKillBelow(gKill)
         return tasks
     def getPlotsRaw(self,name,expr,bins,cut,process=None,nodata=False,makeSummary=False,closeTreeAfter=False):
         return self.getPlots(PlotSpec(name,expr,bins,{}),cut,process=process,nodata=nodata,makeSummary=makeSummary,closeTreeAfter=closeTreeAfter)

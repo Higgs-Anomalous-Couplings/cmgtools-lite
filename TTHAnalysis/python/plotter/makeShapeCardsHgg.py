@@ -47,7 +47,7 @@ wsp = ROOT.RooWorkspace("cms_hgg_13TeV")
 
 
 vars = ["{fitv}[{xmin},{xmax}]".format(fitv=fitvar,xmin=fitbins[0],xmax=fitbins[-1]), # fit variable (mgg)
-        "dZ[-20,20]",
+        "dZ[-2000,2000]",
         "centralObjectWeight[-999999.,999999.]"
     ]
 
@@ -61,7 +61,8 @@ if options.categ:
     for ibin,binname in enumerate(catlabels):
         cexprfull = "({catexpr}=={ic})*({cut})".format(catexpr=cexpr,ic=ibin+1,cut=cuts.allCuts())
         rdsname = "{p}_{cat}".format(p=procId,cat=binname)
-        reports = mca.getRooDataSet(rdsname,vars,cexprfull)
+        reports = mca.getRooDataSet(rdsname,vars,cexprfull,proc)
+        print "got RooDataSet for: %-20s category: %-40s: %8d events." % (proc,binname,reports[proc].numEntries())
         # WARNING! This is very error prone, but it is linked to the way it HAS to be run:
         # only 1 proc / command. Then take the only report
         allreports[rdsname] = reports[proc]
