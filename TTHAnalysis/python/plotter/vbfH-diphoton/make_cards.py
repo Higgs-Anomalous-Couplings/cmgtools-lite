@@ -1,8 +1,8 @@
+# USAGE: python vbfH-diphoton/make_cards.py cards_fithgg Run2
+
 import os, sys
 nCores=8
-#submit = '''sbatch -c %d -p short  --wrap '{command}' '''%nCores
-submit = '{command}' 
-
+submit = '{command}'
 
 ORIGIN="/eos/cms/store/group/dpg_ecal/comm_ecal/localreco/vbfhgg/HiggsCouplings/Trees_161221/2017ULReReco/"; 
 
@@ -46,15 +46,20 @@ CATPOSTFIX=""
 
 ncats = 18
 CATBINS="["+",".join([str(i+0.5) for i in xrange(ncats+1)])+"]"
-NAMES  = ','.join( 'RECO_%s_%s_%s'%(x,y,z) for x in 'MJJ_250_350,MJJ_350_700,MJJ_GE700'.split(',') for y in 'DCP_0,DCP_1,DCP_2'.split(',') for z in 'Tag0,Tag1'.split(','))
+NAMES  = ','.join( 'RECO_%s_%s_%s'%(x,y,z) for x in 'MJJ_250_350,MJJ_350_700,MJJ_GE700'.split(',') for y in 'DCP0,DCP1,DCP2'.split(',') for z in 'Tag0,Tag1'.split(','))
 
 procs = {
-    'vbf_125_13TeV': 'vbfH',
-    'ggh_125_13TeV': 'ggH'
+    'ggh_120_13TeV': 'ggH120',
+    'ggh_125_13TeV': 'ggH125',
+    'ggh_130_13TeV': 'ggH130',
+    'vbf_120_13TeV': 'vbfH120',
+    'vbf_125_13TeV': 'vbfH125',
+    'vbf_130_13TeV': 'vbfH130',
+    'Data_13TeV'   : 'data',
 }
 
 for procid,proc in procs.iteritems():
     ASIMOV = ' --asimov s ' if proc!='data' else ' '
     TORUN='''python {SCRIPT} {DOFILE} vbfH-diphoton/mca-vbfhgg{MCASUFFIX}{MCAOPTION}.txt vbfH-diphoton/vbfhgg.txt "{FITVAR}" "{VARBINS}" {PROC} {OPT_VBF} --binname {PROCID} -p {PROC} {ASIMOV} --categorize "{CATFUNCTION_2G}" "{CATBINS}" "{NAMES}" '''.format(SCRIPT=SCRIPT, DOFILE=DOFILE, MCASUFFIX=MCASUFFIX, MCAOPTION=MCAOPTION, FITVAR=FITVAR, VARBINS=VARBINS, CATFUNCTION_2G=CATFUNCTION_2G, CATBINS=CATBINS, OPT_VBF=OPT_VBF,YEAR=YEAR,NAMES=NAMES,PROC=proc,PROCID=procid,ASIMOV=ASIMOV)
     print submit.format(command=TORUN)
-            
+    print "\n"

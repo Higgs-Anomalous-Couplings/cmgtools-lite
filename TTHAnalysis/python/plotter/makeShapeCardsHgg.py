@@ -25,7 +25,12 @@ if "/functions_cc.so" not in ROOT.gSystem.GetLibraries():
 
 mca  = MCAnalysis(args[0],options)
 cuts = CutsFile(args[1],options)
+fitvar = args[2]
+fitbins = [float(s.replace("[","").replace("]","")) for s in args[3].split(",")]
 proc = args[4]
+
+if len(options.processes)>1 or options.processes[0]!=proc:
+    raise RuntimeError("There should be only one process, and the 4th argument coincide with -p <proc> argument")
 
 binname = os.path.basename(args[1]).replace(".txt","") if options.binname == 'default' else options.binname
 if binname[0] in "1234567890": raise RuntimeError("Bins should start with a letter.")
@@ -34,93 +39,42 @@ if not os.path.exists(outdir): os.mkdir(outdir)
 
 procId = "_".join(os.path.basename(mca.treename).split("_")[:-1])
 
-report={}
-if options.infile:
-    infile = ROOT.TFile(outdir+binname+".bare.root","read")
-    for p in mca.listSignals(True)+mca.listBackgrounds(True)+['data']:
-        variations = mca.getProcessNuisances(p) if p != "data" else []
-        h = readHistoWithNuisances(infile, "x_"+p, variations, mayBeMissing=True)
-        if h: report[p] = h
-else:
-    if options.categ:
-       cexpr, cbins, _ = options.categ
-       report = mca.getPlotsRaw("x", cexpr+":"+args[2], makeBinningProductString(args[3],cbins), cuts.allCuts(), nodata=options.asimov) 
-    else:
-       report = mca.getPlotsRaw("x", args[2], args[3], cuts.allCuts(), nodata=options.asimov) 
-    for p,h in report.iteritems(): h.cropNegativeBins()
-
-if options.savefile:
-    savefile = ROOT.TFile(outdir+binname+".bare.root","recreate")
-    for k,h in report.iteritems(): 
-        h.writeToFile(savefile, takeOwnership=False)
-    savefile.Close()
-
-if options.asimov:
-    if options.asimov in ("s","sig","signal","s+b"):
-        asimovprocesses = mca.listSignals() + mca.listBackgrounds()
-    elif options.asimov in ("b","bkg","background", "b-only"):
-        asimovprocesses = mca.listBackgrounds()
-    else: raise RuntimeError("the --asimov option requires to specify signal/sig/s/s+b or background/bkg/b/b-only")
-    tomerge = None
-    for p in asimovprocesses:
-        if p in report: 
-            if tomerge is None: 
-                tomerge = report[p].raw().Clone("x_data_obs"); tomerge.SetDirectory(None)
-            else: tomerge.Add(report[p].raw())
-    report['data_obs'] = HistoWithNuisances(tomerge)
-else:
-    report['data_obs'] = report['data'].Clone("x_data_obs") 
-
-if options.categ:
-    allreports = dict()
-    catlabels = options.categ[2].split(",")
-    if len(catlabels) != report["data_obs"].GetNbinsY(): raise RuntimeError("Mismatch between category labels and bins")
-    for ic,lab in enumerate(catlabels):
-        allreports["%s_%s"%(binname,lab)] = dict( (k, h.projectionX("x_"+k,ic+1,ic+1)) for (k,h) in report.iteritems() )
-else:
-    allreports = {binname:report}
-
-outfile = ROOT.TFile.Open("{d}/output_{p}.root".format(d=outdir,p=proc), "RECREATE")
+outfilename = "{d}/output_{p}.root".format(d=outdir,p=binname)
+outfile = ROOT.TFile.Open(outfilename, "RECREATE")
 outfile.mkdir("tagsDumper")
 outfile.cd("tagsDumper")
 wsp = ROOT.RooWorkspace("cms_hgg_13TeV")
 
+
+vars = ["{fitv}[{xmin},{xmax}]".format(fitv=fitvar,xmin=fitbins[0],xmax=fitbins[-1]), # fit variable (mgg)
+        "dZ[-20,20]",
+        "centralObjectWeight[-999999.,999999.]"
+    ]
+
+allreports = {}
+if options.categ:
+    cexpr, cbins, clabels = options.categ
+    catbins = [float(s.replace("[","").replace("]","")) for s in cbins.split(",")]
+    catlabels = clabels.split(",")
+    if len(catlabels) != len(catbins)-1: raise RuntimeError("Mismatch between category labels and bins")
+    reports = {}
+    for ibin,binname in enumerate(catlabels):
+        cexprfull = "({catexpr}=={ic})*({cut})".format(catexpr=cexpr,ic=ibin+1,cut=cuts.allCuts())
+        rdsname = "{p}_{cat}".format(p=procId,cat=binname)
+        reports = mca.getRooDataSet(rdsname,vars,cexprfull)
+        # WARNING! This is very error prone, but it is linked to the way it HAS to be run:
+        # only 1 proc / command. Then take the only report
+        allreports[rdsname] = reports[proc]
+else:
+    print "Not yet implemented"
+
+outfile.cd("tagsDumper")
 for catname, report in allreports.iteritems():
-  if options.bbb:
-    if options.autoMCStats: raise RuntimeError("Can't use --bbb together with --amc/--autoMCStats")
-    for p,h in report.iteritems(): 
-      if p not in ("data", "data_obs"):
-        h.addBinByBin(namePattern="%s_%s_%s_bin{bin}" % (options.bbb, catname, p), conservativePruning = True)
-  for p,h in report.iteritems():
-    for b in xrange(1,h.GetNbinsX()+1):
-      h.SetBinError(b,min(h.GetBinContent(b),h.GetBinError(b))) # crop all uncertainties to 100% to avoid negative variations
-  nuisances = sorted(listAllNuisances(report))
-
-  allyields = dict([(p,h.Integral()) for p,h in report.iteritems()])
-  procs = []; iproc = {}
-  for i,s in enumerate(mca.listSignals()):
-    if s != proc: continue
-    if s not in allyields: continue
-    if allyields[s] == 0: continue
-    procs.append(s); iproc[s] = i-len(mca.listSignals())+1
-  for i,b in enumerate(mca.listBackgrounds()):
-    if b != proc: continue
-    if b not in allyields: continue
-    if allyields[b] == 0: continue
-    procs.append(b); iproc[b] = i+1
-  #for p in procs: print "%-10s %10.4f" % (p, allyields[p])
-
-  if proc=='data': towrite = report["data_obs"].raw()
-  else: towrite = [ report[p].raw() for p in procs ]
-
-  name = h.GetName()
-  var = ROOT.RooRealVar(args[2],args[2],h.GetXaxis().GetBinLowEdge(1),h.GetXaxis().GetBinUpEdge(h.GetNbinsX()))
-  rdsname = "{p}_{cat}".format(p=procId,cat=catname.replace(binname+"_",""))
-  rds = ROOT.RooDataHist(rdsname, rdsname, ROOT.RooArgList(var), h.raw())
-  getattr(wsp,'import')(rds)
+    getattr(wsp,'import')(report)
+wsp.Print()
 
 wsp.Write()
 outfile.Close()
 ROOT.gDirectory.Add(wsp) # needed not to crash
-print "Wrote to {d}/output_{p}.root".format(d=outdir,p=proc)
+print "Wrote to ",outfilename
 
