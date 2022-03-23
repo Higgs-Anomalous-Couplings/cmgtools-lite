@@ -461,6 +461,26 @@ class MCAnalysis:
             formatted_report.append((cn,copy(thisret)))
         print formatted_report
         return formatted_report
+    def getRooDataSet(self,name,variables,cut,filename=None,process=None):
+        allSig = []; allBg = []
+        tasks = {}
+        for key,ttys in self._allData.iteritems():
+            if key == 'data' and nodata: continue
+            if process != None and key != process: continue
+            for tty in ttys:
+                mytree = tty.getTree()
+                ntot = mytree.GetEntries()
+                fname = filename if filename else "dummy.root"
+                fout = ROOT.TFile(fname,"recreate")
+                wsp = ROOT.RooWorkspace("dummy")
+                selt = mytree.CopyTree(cut)
+                aset = ROOT.RooArgSet()
+                for var in variables:
+                    aset.add(wsp.factory(var))
+                ds = ROOT.RooDataSet(name,name,selt,aset)
+                tasks[key] = ds
+                os.system("rm -f %s " %fname)
+        return tasks
     def getPlotsRaw(self,name,expr,bins,cut,process=None,nodata=False,makeSummary=False,closeTreeAfter=False):
         return self.getPlots(PlotSpec(name,expr,bins,{}),cut,process=process,nodata=nodata,makeSummary=makeSummary,closeTreeAfter=closeTreeAfter)
     def getPlots(self,plotspec,cut,process=None,nodata=False,makeSummary=False,closeTreeAfter=False):
