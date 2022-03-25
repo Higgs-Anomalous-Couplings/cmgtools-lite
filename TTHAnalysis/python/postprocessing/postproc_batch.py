@@ -92,7 +92,7 @@ if __name__ == "__main__":
     parser.add_option("-r", "--runtime",    type=int, default=480, help="Condor runtime. In minutes.");
     parser.add_option(      "--memory",     type=int, default=2000, help="Condor memory. In MB.");
     parser.add_option("-s", "--submit",    action='store_true', default=False, help="Submit the jobs to lsf/condor.");
-    parser.add_option("-t", "--tree",    dest="tree",      default='vbfTagDumper/trees/vbf_125_13TeV_GeneralDipho', help="Pattern for tree name");
+    parser.add_option("-t", "--tree",    dest="tree",      default='tagsDumper/trees/ggh_13TeV_VBFTag', help="Pattern for tree name");
     parser.add_option("--log", "--log-dir", dest="logdir", type="string", default=None, help="Directory of stdout and stderr");
     parser.add_option("--env",   dest="env", type="string", default="condor", help="Give the environment on which you want to use the batch system (lsf,condor). Default: condor");
     parser.add_option("--run",   dest="runner",  type="string", default="lxbatch_runner.sh", help="Give the runner script (default: lxbatch_runner.sh)");
@@ -123,15 +123,13 @@ if __name__ == "__main__":
         
         # override this... flashhgg have different treename depending on the sample
         if 'GluGluH' in short:
-            treename = 'tagsDumper/trees/ggh_125_13TeV_VBFTag'
+            treename = 'tagsDumper/trees/ggh_13TeV_VBFTag'
         elif 'DiPho' in short:
             treename = 'tagsDumper/trees/dipho_13TeV_VBFTag'
         elif 'GJet' in short:
             treename = 'tagsDumper/trees/gjet_anyfake_13TeV_VBFTag'
-        elif 'JHUGen' in short:
-            treename = 'tagsDumper/trees/%s_13TeV_VBFTag' % short
         elif 'VBF' in short:
-            treename = 'tagsDumper/trees/vbf_125_13TeV_VBFTag'
+            treename = 'tagsDumper/trees/vbfh_13TeV_VBFTag'
         else:
             treename = 'tagsDumper/trees/Data_13TeV_VBFTag'
 
