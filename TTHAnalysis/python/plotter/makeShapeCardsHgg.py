@@ -16,6 +16,7 @@ parser.add_option("--infile", dest="infile", action="store_true", default=False,
 parser.add_option("--savefile", dest="savefile", action="store_true", default=False, help="Save histos to file")
 parser.add_option("--categorize", dest="categ", type="string", nargs=3, default=None, help="Split in categories. Requires 3 arguments: expression, binning, bin labels")
 parser.add_option("--regularize", dest="regularize", action="store_true", default=False, help="Regularize templates")
+parser.add_option("--onlyfracs", dest="onlyfracs", action="store_true", default=False, help="Only print the category fractions, do not create the workspaces")
 (options, args) = parser.parse_args()
 options.weight = True
 options.final  = True
@@ -39,6 +40,34 @@ if not os.path.exists(outdir): os.mkdir(outdir)
 
 procId = "_".join(os.path.basename(mca.treename).split("_")[:-1])
 
+plotsraw = {}
+if options.categ:
+    allplotsraw = dict()
+    cexpr, cbins, clabels = options.categ
+    catbins = [float(s.replace("[","").replace("]","")) for s in cbins.split(",")]
+    catlabels = clabels.split(",")
+    if len(catlabels) != len(catbins)-1: raise RuntimeError("Mismatch between category labels and bins")
+    plotsraw = mca.getPlotsRaw("x", cexpr+":"+args[2], makeBinningProductString(args[3],cbins), cuts.allCuts(), nodata=options.asimov) 
+    for p,h in plotsraw.iteritems(): h.cropNegativeBins()
+    for ibin,binname in enumerate(catlabels):
+        allplotsraw["%s_%s"%(proc,binname)] = plotsraw[proc].projectionX("x_"+proc,ibin+1,ibin+1)
+
+allyields = dict([(p,h.Integral()) for p,h in allplotsraw.iteritems()])
+procyield = sum([y for k,y in allyields.iteritems()])
+
+lines=[]
+for k,y in allyields.iteritems():
+    lines.append("globalXSBRMap['AC']['%s'] = {'mode':'%s','factor':%.4f}" % (k,proc,y/procyield))
+
+fracstxt = open(outdir+proc+"_fracs.txt","w")
+for l in sorted(lines):
+    fracstxt.write(l+'\n')
+print "Wrote fractions to: "+outdir+proc+"_fracs.txt"
+
+if options.onlyfracs:
+    print "Category fractions DONE. Exiting without making the workspaces."
+    exit(0)
+    
 outfilename = "{d}/output_{p}.root".format(d=outdir,p=binname)
 outfile = ROOT.TFile.Open(outfilename, "RECREATE")
 outfile.mkdir("tagsDumper")
@@ -51,6 +80,7 @@ vars = ["{fitv}[{xmin},{xmax}]".format(fitv=fitvar,xmin=fitbins[0],xmax=fitbins[
         "centralObjectWeight[-999999.,999999.]"
     ]
 
+
 allreports = {}
 if options.categ:
     cexpr, cbins, clabels = options.categ
@@ -58,6 +88,7 @@ if options.categ:
     catlabels = clabels.split(",")
     if len(catlabels) != len(catbins)-1: raise RuntimeError("Mismatch between category labels and bins")
     reports = {}
+
     for ibin,binname in enumerate(catlabels):
         cexprfull = "({catexpr}=={ic})*({cut})".format(catexpr=cexpr,ic=ibin+1,cut=cuts.allCuts())
         rdsname = "{p}_{cat}".format(p=procId,cat=binname)
@@ -66,8 +97,10 @@ if options.categ:
         # WARNING! This is very error prone, but it is linked to the way it HAS to be run:
         # only 1 proc / command. Then take the only report
         allreports[rdsname] = reports[proc]
+        allplotsraw["%s_%s"%(proc,binname)] = dict( (k, h.projectionX("x_"+k,ibin+1,ibin+1)) for (k,h) in plotsraw.iteritems() )
 else:
     print "Not yet implemented"
+
 
 outfile.cd("tagsDumper")
 for catname, report in allreports.iteritems():
