@@ -38,7 +38,6 @@ if binname[0] in "1234567890": raise RuntimeError("Bins should start with a lett
 outdir  = options.outdir+"/" if options.outdir else ""
 if not os.path.exists(outdir): os.mkdir(outdir)
 
-procId = "_".join(os.path.basename(mca.treename).split("_")[:-1])
 
 plotsraw = {}
 if options.categ:
@@ -68,7 +67,17 @@ if options.onlyfracs:
     print "Category fractions DONE. Exiting without making the workspaces."
     exit(0)
     
-outfilename = "{d}/output_{p}.root".format(d=outdir,p=binname)
+
+# make the RooDataSets
+MH=0
+if "H" in proc:
+    prod,MH = proc.split("H")
+    outfilename = "{d}/output_M{MH}_13TeV_{p}.root".format(d=outdir,MH=MH,p=prod)
+    MH=int(MH)
+    procId = "{prod}_{MH}_13TeV".format(prod=prod,MH=MH)
+else:
+    outfilename = "{d}/output_Data_13TeV.root"
+    procId = "Data_13TeV"
 outfile = ROOT.TFile.Open(outfilename, "RECREATE")
 outfile.mkdir("tagsDumper")
 outfile.cd("tagsDumper")
@@ -77,9 +86,9 @@ wsp = ROOT.RooWorkspace("cms_hgg_13TeV")
 
 vars = ["{fitv}[{xmin},{xmax}]".format(fitv=fitvar,xmin=fitbins[0],xmax=fitbins[-1]), # fit variable (mgg)
         "dZ[-2000,2000]",
-        "centralObjectWeight[-999999.,999999.]"
+        "centralObjectWeight[-999999.,999999.]",
+        "weight[-999999.,999999.]"
     ]
-
 
 allreports = {}
 if options.categ:
@@ -93,7 +102,7 @@ if options.categ:
         cexprfull = "({catexpr}=={ic})*({cut})".format(catexpr=cexpr,ic=ibin+1,cut=cuts.allCuts())
         rdsname = "{p}_{cat}".format(p=procId,cat=binname)
         reports = mca.getRooDataSet(rdsname,vars,cexprfull,proc)
-        print "got RooDataSet for: %-20s category: %-40s: %8d events." % (proc,binname,reports[proc].numEntries())
+        print "got RooDataSet named %-40s for: %-20s category: %-40s: %8d entries, equiv to %.2f weighted events." % (rdsname,proc,binname,reports[proc].numEntries(),reports[proc].sumEntries())
         # WARNING! This is very error prone, but it is linked to the way it HAS to be run:
         # only 1 proc / command. Then take the only report
         allreports[rdsname] = reports[proc]

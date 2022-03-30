@@ -521,6 +521,15 @@ class TreeToYield:
         self._stylePlot(ret,plotspec)
         ret._cname = self._cname
         return ret
+    def getWeight(self):
+        if self._weight:
+            if self._isdata: weight = "(%s)     *(%s)" % (self._weightString,                    self._scaleFactor)
+            else:            weight = "(%s)*(%s)*(%s)" % (self._weightString,self._options.lumi, self._scaleFactor)
+        else:
+            weight = "1"
+        if self._weightStringAll != "1":
+            weight = "(%s)*(%s)" % (self._weightStringAll)
+        return weight
     def getWeightForCut(self,cut):
         if self._weight:
             if self._isdata: cut = "(%s)     *(%s)*(%s)" % (self._weightString,                    self._scaleFactor, self.adaptExpr(cut,cut=True))
