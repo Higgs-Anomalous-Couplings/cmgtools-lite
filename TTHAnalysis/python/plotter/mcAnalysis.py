@@ -483,13 +483,24 @@ class MCAnalysis:
                 out = mytree.CopyTree('1')
                 wsp = ROOT.RooWorkspace("dummy")
                 aset = ROOT.RooArgSet()
+                wgtset = ROOT.RooArgList()
+                wgtvars = [v.replace("(","").replace(")","") for v in tty.getWeight().split("*") if re.search("[A-Za-z]",v)]
                 for var in variables:
-                    aset.add(wsp.factory(var))
+                    aset.add(wsp.factory(var))                        
+                    if var.split("[")[0] in wgtvars:
+                        wgtset.add(wsp.factory(var))
+                formula = tty.getWeight()
+                for idx in xrange(wgtset.getSize()):
+                    formula = formula.replace(wgtset.at(idx).GetName(),"@%d"%idx)
                 ds = ROOT.RooDataSet(name,name,out,aset)
+                wgtFunc = ROOT.RooFormulaVar("wgt","wgt",formula,wgtset)
+                wgtVar = ds.addColumn(wgtFunc)
+                aset.add(wgtVar)
+                wds = ROOT.RooDataSet(name,name,aset,ROOT.RooFit.Import(ds),ROOT.RooFit.WeightVar(wgtVar))
                 if key not in tasks:
-                    tasks[key] = ds
+                    tasks[key] = wds
                 else:
-                    tasks[key].append(ds)
+                    tasks[key].append(wds)
                 os.system("rm -f %s " %fname)
                 mytree.SetEventList(0)
                 del out
