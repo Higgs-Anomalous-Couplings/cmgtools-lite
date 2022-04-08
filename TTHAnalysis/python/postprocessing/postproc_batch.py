@@ -21,7 +21,8 @@ from CMGTools.TTHAnalysis.postprocessing.framework.postprocessor import PostProc
 ## --log friends_log/ --submit --env lxbatch --queue 1nd (optional, default 8nh)
 
 DEFAULT_MODULES = [("CMGTools.TTHAnalysis.postprocessing.examples.eventVars_2g", "recoMelaCentral"),
-                   ]
+                   ("CMGTools.TTHAnalysis.postprocessing.examples.kinDNN_vbfHtoGG", "kinDNN"),
+               ]
 
 
 def writeCondorCfg(logdir, name, flavour=None, maxRunTime=None,maxMemory=4000):
@@ -130,6 +131,10 @@ if __name__ == "__main__":
             treename = 'tagsDumper/trees/gjet_anyfake_13TeV_VBFTag'
         elif 'VBF' in short:
             treename = 'tagsDumper/trees/vbfh_13TeV_VBFTag'
+        elif 'ttH' in short:
+            treename = 'tagsDumper/trees/tth_13TeV_VBFTag'
+        elif 'VH' in short:
+            treename = 'tagsDumper/trees/wzh_13TeV_VBFTag'
         else:
             treename = 'tagsDumper/trees/Data_13TeV_VBFTag'
 
