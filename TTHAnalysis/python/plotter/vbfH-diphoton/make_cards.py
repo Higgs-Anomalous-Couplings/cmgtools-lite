@@ -1,10 +1,10 @@
-# USAGE: python vbfH-diphoton/make_cards.py cards_fithgg Run2
+# USAGE: python vbfH-diphoton/make_cards.py cards_fithgg 2018
 
 import os, sys
 nCores=8
 submit = '{command}'
 
-ORIGIN="/eos/cms/store/group/dpg_ecal/comm_ecal/localreco/vbfhgg/HiggsCouplings/Trees_161221/2017ULReReco/"; 
+ORIGIN="/eos/cms/store/group/dpg_ecal/comm_ecal/localreco/vbfhgg/HiggsCouplings/Trees_21032022"; 
 
 if len(sys.argv) < 3: 
     print 'Syntax is %s [outputdir] [year] [other]'%sys.argv[0]
@@ -13,20 +13,15 @@ OUTNAME=sys.argv[1]
 YEAR=sys.argv[2]
 OTHER=sys.argv[3:] if len(sys.argv) > 3 else ''
 
-if   YEAR=='2016': LUMI="35.9"
-elif YEAR=='2017': LUMI="41.4"
-elif YEAR=='2018': LUMI="59.7"
-elif YEAR=='Run2': LUMI="138.0"
-#elif YEAR in '2018': LUMI="137.0" # using 2018 MC/data as proxy for tot Run 2
-else:
+if YEAR not in ['2016','2017','2018']:
     raise RuntimeError("Wrong year %s"%YEAR)
-
+LUMI="1" # this is what is needed by the finalfits, which re-normalizes assuming L=1fb-1
 
 #print "Normalizing to {LUMI}/fb".format(LUMI=LUMI);
 OPTIONS=" -j {J} -l {LUMI} -f ".format(LUMI=LUMI,J=nCores)
 os.system("test -d cards/{OUTNAME} || mkdir -p cards/{OUTNAME}".format(OUTNAME=OUTNAME))
 OPTIONS="{OPTIONS} --od cards/{OUTNAME} ".format(OPTIONS=OPTIONS, OUTNAME=OUTNAME)
-T2G="-P '{ORIGIN}' -F 'Friends' '{{P}}/friends/{{cname}}_Friend.root' ".format(ORIGIN=ORIGIN)
+T2G="-P '{ORIGIN}/{YEAR}' -F 'Friends' '{{P}}/friends/{{cname}}_Friend.root' ".format(ORIGIN=ORIGIN,YEAR=YEAR)
 
 MCAOPTION=""
 SCRIPT= "makeShapeCardsHgg.py"
@@ -37,7 +32,7 @@ CATPOSTFIX=""
 FITVAR="dipho_mass"
 VARBINS='['+','.join([str(b) for b in xrange(100,181)])+']'
 CATFUNCTION_2G="mela_catIndex( dijet_Mjj, dipho_mva, dijet_mva_prob_VBF, dijet_mva_prob_ggH, D0minus )"
-MCASUFFIX=""
+MCASUFFIX="-"+YEAR
 
 DOFILE = ""
 
@@ -49,17 +44,26 @@ CATBINS="["+",".join([str(i+0.5) for i in xrange(ncats+1)])+"]"
 NAMES  = ','.join( 'RECO_%s_%s_%s'%(x,y,z) for x in 'MJJ_250_350,MJJ_350_700,MJJ_GE700'.split(',') for y in 'DCP0,DCP1,DCP2'.split(',') for z in 'Tag0,Tag1'.split(','))
 
 procs = {
-    'ggh_120_13TeV': 'ggH120',
-    'ggh_125_13TeV': 'ggH125',
-    'ggh_130_13TeV': 'ggH130',
-    'vbf_120_13TeV': 'vbfH120',
-    'vbf_125_13TeV': 'vbfH125',
-    'vbf_130_13TeV': 'vbfH130',
-    'Data_13TeV'   : 'data',
+    'ggh_120_13TeV' : 'ggH120',
+    'ggh_125_13TeV' : 'ggH125',
+    'ggh_130_13TeV' : 'ggH130',
+    'vbfh_120_13TeV': 'vbfH120',
+    'vbfh_125_13TeV': 'vbfH125',
+    'vbfh_130_13TeV': 'vbfH130',
+    'tth_120_13TeV' : 'ttH120',
+    'tth_125_13TeV' : 'ttH125',
+    'tth_130_13TeV' : 'ttH130',
+    'wzh_120_13TeV' : 'wzH120',
+    'wzh_125_13TeV' : 'wzH125',
+    'wzh_130_13TeV' : 'wzH130',
+
+    'vbfh_ALT_125_13TeV': 'vbfALT0MH125',
+
+    'Data_13TeV'    : 'data',
 }
 
 for procid,proc in procs.iteritems():
     ASIMOV = ' --asimov s ' if proc!='data' else ' '
-    TORUN='''python {SCRIPT} {DOFILE} vbfH-diphoton/mca-vbfhgg{MCASUFFIX}{MCAOPTION}.txt vbfH-diphoton/vbfhgg.txt "{FITVAR}" "{VARBINS}" {PROC} {OPT_VBF} --binname {PROCID} -p {PROC} {ASIMOV} --categorize "{CATFUNCTION_2G}" "{CATBINS}" "{NAMES}" '''.format(SCRIPT=SCRIPT, DOFILE=DOFILE, MCASUFFIX=MCASUFFIX, MCAOPTION=MCAOPTION, FITVAR=FITVAR, VARBINS=VARBINS, CATFUNCTION_2G=CATFUNCTION_2G, CATBINS=CATBINS, OPT_VBF=OPT_VBF,YEAR=YEAR,NAMES=NAMES,PROC=proc,PROCID=procid,ASIMOV=ASIMOV)
+    TORUN='''python {SCRIPT} {DOFILE} vbfH-diphoton/mca-vbfhgg{MCASUFFIX}{MCAOPTION}.txt vbfH-diphoton/vbfhgg.txt "{FITVAR}" "{VARBINS}" {PROC} {OPT_VBF} --binname {PROCID} -p {PROC} {ASIMOV} --categorize "{CATFUNCTION_2G}" "{CATBINS}" "{NAMES}" '''.format(SCRIPT=SCRIPT, DOFILE=DOFILE, MCASUFFIX=MCASUFFIX, MCAOPTION=MCAOPTION, FITVAR=FITVAR, VARBINS=VARBINS, CATFUNCTION_2G=CATFUNCTION_2G, CATBINS=CATBINS, OPT_VBF=OPT_VBF,NAMES=NAMES,PROC=proc,PROCID=procid,ASIMOV=ASIMOV)
     print submit.format(command=TORUN)
     print "\n"
