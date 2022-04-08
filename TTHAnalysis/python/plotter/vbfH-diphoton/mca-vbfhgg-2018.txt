@@ -14,7 +14,7 @@ vbfH120+  : output_VBFHToGG_M-120_TuneCP5_13TeV-powheg-pythia8 : 0.001; FillColo
 vbfH125+  : output_VBFHToGG_M125_13TeV_amcatnlo_pythia8        : 0.001; FillColor=ROOT.kGray+2  , FillStyle=3004  , Label="VBF H\#rightarrow\#gamma\#gamma (powheg)", TreeName="tagsDumper/trees/vbfh_13TeV_VBFTag"
 vbfH130+  : output_VBFHToGG_M-130_TuneCP5_13TeV-powheg-pythia8 : 0.001; FillColor=ROOT.kGray+2  , FillStyle=3004  , Label="VBF H\#rightarrow\#gamma\#gamma (powheg)", TreeName="tagsDumper/trees/vbfh_13TeV_VBFTag"
 
-vbfH0M+   : output_VBFHiggs0MToGG_M125_TuneCP5_13TeV-JHUGenV7011-pythia8 : 0.001; FillColor=ROOT.kBlue  , Label="VBF H\#rightarrow\#gamma\#gamma (f_{a3} = 1.0)", TreeName="tagsDumper/trees/vbfh_13TeV_VBFTag"
+vbfALT0MH125+   : output_VBFHiggs0MToGG_M125_TuneCP5_13TeV-JHUGenV7011-pythia8 : 0.001; FillColor=ROOT.kBlue  , Label="VBF H\#rightarrow\#gamma\#gamma (f_{a3} = 1.0)", TreeName="tagsDumper/trees/vbfh_13TeV_VBFTag"
 
 
 ### BACKGROUNDS ###

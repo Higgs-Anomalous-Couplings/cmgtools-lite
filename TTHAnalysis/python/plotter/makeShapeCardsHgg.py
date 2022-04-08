@@ -38,34 +38,34 @@ if binname[0] in "1234567890": raise RuntimeError("Bins should start with a lett
 outdir  = options.outdir+"/" if options.outdir else ""
 if not os.path.exists(outdir): os.mkdir(outdir)
 
+if "H" in proc:
+    plotsraw = {}
+    if options.categ:
+        allplotsraw = dict()
+        cexpr, cbins, clabels = options.categ
+        catbins = [float(s.replace("[","").replace("]","")) for s in cbins.split(",")]
+        catlabels = clabels.split(",")
+        if len(catlabels) != len(catbins)-1: raise RuntimeError("Mismatch between category labels and bins")
+        plotsraw = mca.getPlotsRaw("x", cexpr+":"+args[2], makeBinningProductString(args[3],cbins), cuts.allCuts(), nodata=options.asimov) 
+        for p,h in plotsraw.iteritems(): h.cropNegativeBins()
+        for ibin,binname in enumerate(catlabels):
+            allplotsraw["%s_%s"%(proc,binname)] = plotsraw[proc].projectionX("x_"+proc,ibin+1,ibin+1)
 
-plotsraw = {}
-if options.categ:
-    allplotsraw = dict()
-    cexpr, cbins, clabels = options.categ
-    catbins = [float(s.replace("[","").replace("]","")) for s in cbins.split(",")]
-    catlabels = clabels.split(",")
-    if len(catlabels) != len(catbins)-1: raise RuntimeError("Mismatch between category labels and bins")
-    plotsraw = mca.getPlotsRaw("x", cexpr+":"+args[2], makeBinningProductString(args[3],cbins), cuts.allCuts(), nodata=options.asimov) 
-    for p,h in plotsraw.iteritems(): h.cropNegativeBins()
-    for ibin,binname in enumerate(catlabels):
-        allplotsraw["%s_%s"%(proc,binname)] = plotsraw[proc].projectionX("x_"+proc,ibin+1,ibin+1)
+    allyields = dict([(p,h.Integral()) for p,h in allplotsraw.iteritems()])
+    procyield = sum([y for k,y in allyields.iteritems()])
 
-allyields = dict([(p,h.Integral()) for p,h in allplotsraw.iteritems()])
-procyield = sum([y for k,y in allyields.iteritems()])
+    lines=[]
+    for k,y in allyields.iteritems():
+        lines.append("globalXSBRMap['AC']['%s'] = {'mode':'%s','factor':%.4f}" % (k,proc,y/procyield))
+    
+    fracstxt = open(outdir+proc+"_fracs.txt","w")
+    for l in sorted(lines):
+        fracstxt.write(l+'\n')
+    print "Wrote fractions to: "+outdir+proc+"_fracs.txt"
 
-lines=[]
-for k,y in allyields.iteritems():
-    lines.append("globalXSBRMap['AC']['%s'] = {'mode':'%s','factor':%.4f}" % (k,proc,y/procyield))
-
-fracstxt = open(outdir+proc+"_fracs.txt","w")
-for l in sorted(lines):
-    fracstxt.write(l+'\n')
-print "Wrote fractions to: "+outdir+proc+"_fracs.txt"
-
-if options.onlyfracs:
-    print "Category fractions DONE. Exiting without making the workspaces."
-    exit(0)
+    if options.onlyfracs:
+        print "Category fractions DONE. Exiting without making the workspaces."
+        exit(0)
     
 
 # make the RooDataSets
@@ -76,7 +76,7 @@ if "H" in proc:
     MH=int(MH)
     procId = "{prod}_{MH}_13TeV".format(prod=prod,MH=MH)
 else:
-    outfilename = "{d}/output_Data_13TeV.root"
+    outfilename = "{d}/output_Data_13TeV.root".format(d=outdir)
     procId = "Data_13TeV"
 outfile = ROOT.TFile.Open(outfilename, "RECREATE")
 outfile.mkdir("tagsDumper")
@@ -106,7 +106,6 @@ if options.categ:
         # WARNING! This is very error prone, but it is linked to the way it HAS to be run:
         # only 1 proc / command. Then take the only report
         allreports[rdsname] = reports[proc]
-        allplotsraw["%s_%s"%(proc,binname)] = dict( (k, h.projectionX("x_"+k,ibin+1,ibin+1)) for (k,h) in plotsraw.iteritems() )
 else:
     print "Not yet implemented"
 
