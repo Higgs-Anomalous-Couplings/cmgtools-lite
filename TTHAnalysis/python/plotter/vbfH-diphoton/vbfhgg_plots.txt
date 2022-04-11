@@ -107,3 +107,5 @@ vbfDNN_psm : vbfDNN_psm : 40,0,1; XTitle="DNN score (SM VBF node)"
 vbfDNN_pbsm : vbfDNN_pbsm : 40,0,1; XTitle="DNN score (BSM VBF node)"
 
 discCats : mela_catIndex( dijet_Mjj, dipho_mva, dijet_mva_prob_VBF, dijet_mva_prob_ggH, D0minus ) : 18,0.5,18.5; XTitle="VBF categories"
+
+dnnCats : dnn_catIndex(vbfDNN_pbkg,vbfDNN_pbsm,D0minus) : 8,0.5,8.5; XTitle="VBF DNN categories"

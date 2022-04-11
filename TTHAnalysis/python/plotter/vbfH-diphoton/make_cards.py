@@ -31,7 +31,7 @@ CATPOSTFIX=""
 
 FITVAR="dipho_mass"
 VARBINS='['+','.join([str(b) for b in xrange(100,181)])+']'
-CATFUNCTION_2G="mela_catIndex( dijet_Mjj, dipho_mva, dijet_mva_prob_VBF, dijet_mva_prob_ggH, D0minus )"
+CATFUNCTION_2G="dnn_catIndex(vbfDNN_pbkg,vbfDNN_pbsm,D0minus)"
 MCASUFFIX="-"+YEAR
 
 DOFILE = ""
@@ -39,9 +39,10 @@ DOFILE = ""
 OPT_VBF='{T2G} {OPTIONS} -W "weight"'.format(T2G=T2G, OPTIONS=OPTIONS)
 CATPOSTFIX=""
 
-ncats = 18
+ncats = 8
 CATBINS="["+",".join([str(i+0.5) for i in xrange(ncats+1)])+"]"
-NAMES  = ','.join( 'RECO_%s_%s_%s'%(x,y,z) for x in 'MJJ_250_350,MJJ_350_700,MJJ_GE700'.split(',') for y in 'DCP0,DCP1,DCP2'.split(',') for z in 'Tag0,Tag1'.split(','))
+NAMES  = ','.join( 'RECO_%s_%s_Tag0'%(x,y) for x in 'DCP0,DCP1'.split(',') for y in 'Bsm0,Bsm1,Bsm2'.split(','))
+NAMES += ','+','.join( 'RECO_%s_Tag1'%(x) for x in 'DCP0,DCP1'.split(','))
 
 procs = {
     'ggh_120_13TeV' : 'ggH120',

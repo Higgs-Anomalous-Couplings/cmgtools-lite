@@ -49,3 +49,31 @@ int mela_catIndex(float mjj, float dipho_bdt, float p_vbf, float p_ggH, float DO
   // std::cout << "category = " << cat << std::endl;
   return cat;
 }
+
+float dnn_pbkg_bins[3] = {0., 0.3, 1.0};
+float dnn_pbsm_bins[4] = {0., 0.3, 0.7, 1.0};
+float D0minus2_bins[3] = {0., 0.2, 1.0};
+TH1F *dnn_pbkg_bins_histo = new TH1F("dnn_pbkg_bins_histo","",2,dnn_pbkg_bins);
+TH1F *dnn_pbsm_bins_histo = new TH1F("dnn_pbsm_bins_histo","",3,dnn_pbsm_bins);
+TH1F *D0minus2_bins_histo = new TH1F("D0minus2_bins_histo","",2,D0minus2_bins);
+
+int dnn_catIndex(float p_bkg, float p_bsm, float DOminus) {
+  int dnn_pbkg_bin = dnn_pbkg_bins_histo->FindBin(p_bkg);
+  if (dnn_pbkg_bin==0 || dnn_pbkg_bin==dnn_pbkg_bins_histo->GetNbinsX()+1) return -1;
+  int dnn_pbsm_bin = dnn_pbsm_bins_histo->FindBin(p_bsm);
+  if (dnn_pbsm_bin==0 || dnn_pbsm_bin==dnn_pbsm_bins_histo->GetNbinsX()+1) return -1;
+  int mela_bin = D0minus2_bins_histo->FindBin( DOminus );
+  // std::cout << "dnn_pbkg_bin = " << dnn_pbkg_bin << std::endl;
+  // std::cout << "dnn_pbsm_bin = " << dnn_pbsm_bin << std::endl;
+  // std::cout << "mela_bin = " << mela_bin << std::endl;
+
+  // for bkg-dominated events, just divide in D0 minus to separate ggH from pp->gg better
+  int cat=-1;
+  if (dnn_pbkg_bin==dnn_pbkg_bins_histo->GetNbinsX()) cat = D0minus2_bins_histo->GetNbinsX() * dnn_pbsm_bins_histo->GetNbinsX() + mela_bin;
+  else cat = D0minus2_bins_histo->GetNbinsX() * dnn_pbsm_bins_histo->GetNbinsX() * (dnn_pbkg_bin-1) +
+         dnn_pbsm_bins_histo->GetNbinsX() * (mela_bin-1) + 
+         dnn_pbsm_bin;
+  
+  //  std::cout << "category = " << cat << std::endl;
+  return cat;
+}

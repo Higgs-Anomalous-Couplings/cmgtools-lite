@@ -72,6 +72,7 @@ if "H" in proc:
 MH=0
 if "H" in proc:
     prod,MH = proc.split("H")
+    prod+='h'
     outfilename = "{d}/output_M{MH}_13TeV_{p}.root".format(d=outdir,MH=MH,p=prod)
     MH=int(MH)
     procId = "{prod}_{MH}_13TeV".format(prod=prod,MH=MH)
