@@ -100,10 +100,12 @@ DCP_za : DCP_za: 50,-1,1.0; XTitle="D_{CP}^{Z#gamma}", Legend='TC', IncludeOverf
 
 Dint_za : Dint_za: 50,-1,1.0; XTitle="D_{int}^{Z#gamma}", Legend='TC', IncludeOverflows=True, Logy=False
 
-kinDNN_prob_bkg : vbfDnnResult_prob_bkg : 40,0,1; XTitle="DNN score (background node)"
+vbfDNN_pbkg : vbfDNN_pbkg : 40,0,1; XTitle="DNN score (background node)"
 
-kinDNN_prob_vbf : vbfDnnResult_prob_VBF : 40,0,1; XTitle="DNN score (VBF node)"
+vbfDNN_psm : vbfDNN_psm : 40,0,1; XTitle="DNN score (SM VBF node)"
 
-kinDNN_prob_ggh : vbfDnnResult_prob_ggH : 40,0,1; XTitle="DNN score (ggH node)"
+vbfDNN_pbsm : vbfDNN_pbsm : 40,0,1; XTitle="DNN score (BSM VBF node)"
 
 discCats : mela_catIndex( dijet_Mjj, dipho_mva, dijet_mva_prob_VBF, dijet_mva_prob_ggH, D0minus ) : 18,0.5,18.5; XTitle="VBF categories"
+
+dnnCats : dnn_catIndex(vbfDNN_pbkg,vbfDNN_pbsm,D0minus) : 8,0.5,8.5; XTitle="VBF DNN categories"
